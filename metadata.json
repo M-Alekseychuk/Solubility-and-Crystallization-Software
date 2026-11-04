@@ -1,0 +1,8 @@
+{
+  "name": "HPLC Solubility Calculator V1.4 (current version)",
+  "description": "Calculate chemical solubility and concentrations from HPLC UV absorption areas with automated model fitting, crystallization seeding strategies, reactor cooling schedules, green chemistry PMI metrics, and batch SOP recipe generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "calibration": [
+    { "id": "cal-1", "pointNumber": 1, "massMg": 10, "volMl": 100, "area": 1250 },
+    { "id": "cal-2", "pointNumber": 2, "massMg": 25, "volMl": 100, "area": 3100 },
+    { "id": "cal-3", "pointNumber": 3, "massMg": 50, "volMl": 100, "area": 6220 },
+    { "id": "cal-4", "pointNumber": 4, "massMg": 100, "volMl": 100, "area": 12450 }
+  ],
+  "samples": [
+    {
+      "id": "s-1",
+      "sampleName": "T20_EtOH_Water_70_30",
+      "solvent1": "Ethanol",
+      "solvent2": "Water",
+      "ratio": 70,
+      "temperature": 20,
+      "area": 3520,
+      "volumeTakenUl": 50,
+      "addedSolventMl": 1.0,
+      "notes": "Equilibrium point at 20°C"
+    },
+    {
+      "id": "s-2",
+      "sampleName": "T40_EtOH_Water_70_30",
+      "solvent1": "Ethanol",
+      "solvent2": "Water",
+      "ratio": 70,
+      "temperature": 40,
+      "area": 7180,
+      "volumeTakenUl": 50,
+      "addedSolventMl": 1.0,
+      "notes": "Equilibrium point at 40°C"
+    },
+    {
+      "id": "s-3",
+      "sampleName": "T60_EtOH_Water_70_30",
+      "solvent1": "Ethanol",
+      "solvent2": "Water",
+      "ratio": 70,
+      "temperature": 60,
+      "area": 14500,
+      "volumeTakenUl": 50,
+      "addedSolventMl": 1.0,
+      "notes": "Equilibrium point at 60°C"
+    }
+  ]
+}
