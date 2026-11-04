@@ -24,9 +24,10 @@ export const exportToPDF = async ({
 }: ExportPDFParams) => {
   const doc = new jsPDF('p', 'pt', 'a4');
 
-  // Load logo as base64
+  // Load logo as base64 (custom logo if uploaded, otherwise default OPCP logo)
+  const customLogo = typeof window !== 'undefined' ? localStorage.getItem('hplc-custom-logo') : null;
   const img = new Image();
-  img.src = logoImg;
+  img.src = customLogo || logoImg;
   await new Promise((resolve) => {
     img.onload = resolve;
     img.onerror = resolve; // Continue even if logo fails

@@ -78,6 +78,38 @@ export default function App() {
   const [isImporting, setIsImporting] = useState(false);
   const overviewFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Logo customization (defaults to compiled OPCP logo, user can upload custom logo)
+  const [customLogo, setCustomLogo] = useState<string | null>(() => {
+    return localStorage.getItem('hplc-custom-logo');
+  });
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please upload a valid image file (PNG, JPG, SVG, WebP).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        localStorage.setItem('hplc-custom-logo', result);
+        setCustomLogo(result);
+        showToast('Logo updated successfully');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleResetLogo = () => {
+    localStorage.removeItem('hplc-custom-logo');
+    setCustomLogo(null);
+    showToast('Reset to default OPCP logo');
+  };
+
   useEffect(() => {
     if (activeExperimentId) {
       localStorage.setItem('hplc-active-experiment', activeExperimentId);
@@ -340,16 +372,49 @@ export default function App() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex py-3 items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center bg-white rounded-xl shadow-sm h-16 w-32 overflow-hidden border border-slate-100 cursor-pointer" onClick={() => setActiveExperimentId(null)}>
+              <input 
+                type="file" 
+                ref={logoInputRef} 
+                onChange={handleLogoUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+              <div 
+                className="group relative flex items-center justify-center bg-white rounded-xl shadow-sm h-16 w-36 overflow-hidden border border-slate-200 cursor-pointer" 
+                onClick={() => setActiveExperimentId(null)}
+                title="Go to experiments overview (Hover to change logo)"
+              >
                 <img 
-                  src={logoImg} 
-                  alt="Mischa's Chemical Industries Logo" 
-                  className="h-full w-full object-contain scale-[1.3]"
+                  src={customLogo || logoImg} 
+                  alt="OPCP - Open Process Chemistry Project Logo" 
+                  className="h-full w-full object-contain p-1.5 transition-transform duration-200 group-hover:scale-105"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f1f5f9"/><text x="50" y="55" font-family="sans-serif" font-size="12" text-anchor="middle" fill="%2364748b">Upload</text><text x="50" y="70" font-family="sans-serif" font-size="12" text-anchor="middle" fill="%2364748b">Logo.png</text></svg>';
+                    (e.target as HTMLImageElement).src = logoImg;
                   }}
                 />
+                <div 
+                  className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button 
+                    onClick={() => logoInputRef.current?.click()}
+                    className="px-2 py-1 rounded bg-white text-slate-800 hover:bg-blue-50 text-[11px] font-semibold flex items-center gap-1 shadow-xs transition-colors"
+                    title="Upload custom logo"
+                  >
+                    <Upload size={12} className="text-blue-600" />
+                    <span>Change</span>
+                  </button>
+                  {customLogo && (
+                    <button 
+                      onClick={handleResetLogo}
+                      className="p-1.5 rounded bg-white text-slate-600 hover:text-red-600 hover:bg-red-50 text-[11px] font-medium shadow-xs transition-colors"
+                      title="Reset to default OPCP logo"
+                    >
+                      <RotateCcw size={12} />
+                    </button>
+                  )}
+                </div>
               </div>
               <div>
                 <div className="flex items-center gap-2.5">

@@ -32,11 +32,12 @@ export const exportToInteractiveHTML = async ({
         return parseFloat(str);
     };
     
-    // Convert logo to base64
+    // Convert logo to base64 (custom logo if uploaded, otherwise default OPCP logo)
     let logoBase64 = '';
     try {
+        const customLogo = typeof window !== 'undefined' ? localStorage.getItem('hplc-custom-logo') : null;
         const img = new Image();
-        img.src = logoImg;
+        img.src = customLogo || logoImg;
         await new Promise((resolve) => {
             img.onload = resolve;
             img.onerror = resolve; 
