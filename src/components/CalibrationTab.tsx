@@ -20,6 +20,21 @@ interface CalibrationTabProps {
 export function CalibrationTab({ points, setPoints, result, wavelength = '210', setWavelength, hplcUsed = '', setHplcUsed, forceZero = false, setForceZero, experimentName }: CalibrationTabProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isDark, setIsDark] = React.useState(() => {
+    return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  });
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   const addPoint = () => {
     setPoints([...points, { id: generateId(), massMg: '', volMl: '', area: '' }]);
   };
@@ -284,16 +299,17 @@ export function CalibrationTab({ points, setPoints, result, wavelength = '210', 
           )}
         </div>
 
-        <div className="lg:col-span-2 bg-white p-6 rounded-lg border border-slate-200 shadow-sm h-[380px]">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm h-[380px]">
           {result.valid ? (
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart margin={{ top: 20, right: 30, bottom: 35, left: 35 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} />
                 <XAxis 
                   dataKey="x" 
                   type="number" 
                   name="Concentration" 
-                  tick={{ fill: '#64748b', fontSize: 14 }}
+                  stroke={isDark ? '#64748b' : '#cbd5e1'}
+                  tick={{ fill: isDark ? '#ffffff' : '#64748b', fontSize: 14 }}
                   tickFormatter={(val: number) => {
                     if (typeof val !== 'number' || isNaN(val)) return '';
                     return `${Number(val.toFixed(3))}`;
@@ -303,7 +319,7 @@ export function CalibrationTab({ points, setPoints, result, wavelength = '210', 
                     value: 'Concentration in mg/mL', 
                     position: 'insideBottom', 
                     offset: -10, 
-                    fill: '#475569', 
+                    fill: isDark ? '#ffffff' : '#475569', 
                     fontSize: 16,
                     fontWeight: 600
                   }}
@@ -311,12 +327,13 @@ export function CalibrationTab({ points, setPoints, result, wavelength = '210', 
                 <YAxis 
                   dataKey="y" 
                   name="Absorbtion" 
-                  tick={{ fill: '#64748b', fontSize: 14 }}
+                  stroke={isDark ? '#64748b' : '#cbd5e1'}
+                  tick={{ fill: isDark ? '#ffffff' : '#64748b', fontSize: 14 }}
                   label={{ 
                     value: 'Absorbtion in mAU', 
                     angle: -90, 
                     position: 'insideLeft', 
-                    fill: '#475569', 
+                    fill: isDark ? '#ffffff' : '#475569', 
                     fontSize: 16,
                     fontWeight: 600,
                     style: { textAnchor: 'middle' },
@@ -324,8 +341,14 @@ export function CalibrationTab({ points, setPoints, result, wavelength = '210', 
                   }}
                 />
                 <Tooltip 
-                  cursor={{ strokeDasharray: '3 3' }}
-                  contentStyle={{ borderRadius: '6px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  cursor={{ strokeDasharray: '3 3', stroke: isDark ? '#475569' : '#cbd5e1' }}
+                  contentStyle={{ 
+                    borderRadius: '6px', 
+                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                    border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, 
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    color: isDark ? '#f8fafc' : '#0f172a'
+                  }}
                   formatter={(value: any, name: string) => [`${roundTo(Number(value))} mAU`, name === 'Standards' ? 'Absorbtion' : name]}
                   labelFormatter={(label) => `Concentration: ${Number(Number(label).toFixed(3))} mg/mL`}
                 />

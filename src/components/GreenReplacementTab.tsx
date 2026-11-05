@@ -310,63 +310,63 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
   };
 
   const CandidateCard = ({ data, isDropIn }: { data: typeof filteredCandidates[0], isDropIn: boolean }) => (
-    <div className={`p-4 rounded-xl border ${isDropIn ? 'bg-blue-50/30 border-blue-200' : 'bg-white border-slate-200'} shadow-xs flex flex-col justify-between relative`}>
+    <div className={`p-4 rounded-xl border ${isDropIn ? 'bg-blue-50/30 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'} shadow-xs flex flex-col justify-between relative`}>
       <div>
         <div className="flex justify-between items-start mb-2">
-          <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+          <h4 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             {data.solvent.name}
             {getIchBadge(data.solvent.ichClass)}
           </h4>
           <div className="text-right">
-            <div className="text-xl font-bold text-slate-700">{data.similarity.toFixed(1)}%</div>
-            <div className="text-[11px] text-slate-500">Similarity</div>
+            <div className="text-xl font-bold text-slate-700 dark:text-slate-100">{data.similarity.toFixed(1)}%</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">Similarity</div>
           </div>
         </div>
         
         <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs mt-3">
           <div>
-            <span className="text-slate-500">EHS Score:</span>
+            <span className="text-slate-500 dark:text-slate-400">EHS Score:</span>
             <div className="flex items-center gap-2 mt-1">
-              <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${getEhsColor(data.solvent.ehsScore)}`}
                   style={{ width: `${(Number(data.solvent.ehsScore) || 0) * 10}%` }}
                 ></div>
               </div>
-              <span className="font-semibold text-slate-700">{data.solvent.ehsScore || '-'}</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">{data.solvent.ehsScore || '-'}</span>
             </div>
           </div>
 
           <div>
-            <span className="text-slate-500">Bulk Cost:</span>
-            <div className="font-medium text-slate-700 mt-1">
+            <span className="text-slate-500 dark:text-slate-400">Bulk Cost:</span>
+            <div className="font-medium text-slate-700 dark:text-slate-200 mt-1">
               {data.solvent.costPerKg !== '' && data.solvent.costPerKg !== undefined
                 ? `$${Number(data.solvent.costPerKg).toFixed(2)} / kg`
-                : <span className="text-slate-400 italic">Not set</span>}
+                : <span className="text-slate-400 dark:text-slate-500 italic">Not set</span>}
             </div>
           </div>
 
           <div>
-            <span className="text-slate-500">Boiling Pt:</span>
-            <div className="font-medium text-slate-700">{data.solvent.boilingPoint}°C</div>
+            <span className="text-slate-500 dark:text-slate-400">Boiling Pt:</span>
+            <div className="font-medium text-slate-700 dark:text-slate-200">{data.solvent.boilingPoint}°C</div>
           </div>
           <div>
-            <span className="text-slate-500">Polarity Index:</span>
-            <div className="font-medium text-slate-700">{data.solvent.polarityIndex}</div>
+            <span className="text-slate-500 dark:text-slate-400">Polarity Index:</span>
+            <div className="font-medium text-slate-700 dark:text-slate-200">{data.solvent.polarityIndex}</div>
           </div>
           <div className="col-span-2">
-            <span className="text-slate-500">Measured Sol:</span>
-            <div className={`font-medium ${data.expSolubility !== null ? 'text-blue-600' : 'text-slate-400'}`}>
+            <span className="text-slate-500 dark:text-slate-400">Measured Sol:</span>
+            <div className={`font-medium ${data.expSolubility !== null ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>
               {data.expSolubility !== null ? `${data.expSolubility.toFixed(2)} mg/mL` : 'No data in active experiment'}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+      <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
         <button
           onClick={() => handleOpenEhsForCandidate(data)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-md transition-colors cursor-pointer border border-emerald-200"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 px-2.5 py-1 rounded-md transition-colors cursor-pointer border border-emerald-200 dark:border-emerald-800"
           title="Compare detailed Health, Safety & Environment profile against reference"
         >
           <ShieldCheck size={14} />
@@ -501,20 +501,20 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
               </div>
 
               {/* Binary Mixture Toggle Checkbox */}
-              <div className="pt-2 border-t border-slate-100">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                 <label className="flex items-center gap-2.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={allowBinaryMixtures}
                     onChange={(e) => setAllowBinaryMixtures(e.target.checked)}
-                    className="rounded border-purple-300 text-purple-600 focus:ring-purple-500 h-4 w-4"
+                    className="rounded border-purple-300 dark:border-purple-700 text-purple-600 focus:ring-purple-500 h-4 w-4"
                   />
-                  <span className="text-sm font-semibold text-purple-900 flex items-center gap-1.5">
-                    <Beaker size={16} className="text-purple-600" />
+                  <span className="text-sm font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
+                    <Beaker size={16} className="text-purple-600 dark:text-purple-400" />
                     Allow binary solvent mixture recommendations
                   </span>
                 </label>
-                <p className="text-xs text-slate-500 ml-6 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 ml-6 mt-0.5">
                   Calculates synergistic blends of two green solvents to closely match the reference solvent's Hansen solubility sphere.
                 </p>
               </div>
@@ -522,23 +522,23 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
           </div>
           
           {referenceSolvent && (
-            <div className="w-full lg:w-80 bg-slate-50/80 border border-slate-200 rounded-xl p-5 flex flex-col justify-between">
+            <div className="w-full lg:w-80 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-5 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2.5">
-                  <h3 className="text-sm font-bold text-slate-800">Target Reference Profile</h3>
+                <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-700 pb-2.5">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Target Reference Profile</h3>
                   {getIchBadge(referenceSolvent.ichClass)}
                 </div>
 
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Name:</span>
-                    <span className="font-bold text-slate-800">{referenceSolvent.name}</span>
+                    <span className="text-slate-500 dark:text-slate-400">Name:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{referenceSolvent.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500">EHS Score:</span>
+                    <span className="text-slate-500 dark:text-slate-400">EHS Score:</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800">{referenceSolvent.ehsScore || '-'}/10</span>
-                      <div className="w-12 h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <span className="font-bold text-slate-800 dark:text-slate-100">{referenceSolvent.ehsScore || '-'}/10</span>
+                      <div className="w-12 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${getEhsColor(referenceSolvent.ehsScore)}`}
                           style={{ width: `${(Number(referenceSolvent.ehsScore) || 0) * 10}%` }}
@@ -547,16 +547,16 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
                     </div>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Boiling Point:</span>
-                    <span className="font-medium text-slate-800">{referenceSolvent.boilingPoint}°C</span>
+                    <span className="text-slate-500 dark:text-slate-400">Boiling Point:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-100">{referenceSolvent.boilingPoint}°C</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Polarity Index:</span>
-                    <span className="font-medium text-slate-800">{referenceSolvent.polarityIndex}</span>
+                    <span className="text-slate-500 dark:text-slate-400">Polarity Index:</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-100">{referenceSolvent.polarityIndex}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Hansen HSP:</span>
-                    <span className="font-mono text-xs font-semibold text-slate-700">
+                    <span className="text-slate-500 dark:text-slate-400">Hansen HSP:</span>
+                    <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {referenceSolvent.hansenD !== undefined 
                         ? `${referenceSolvent.hansenD} / ${referenceSolvent.hansenP} / ${referenceSolvent.hansenH}` 
                         : 'No HSP data'}
@@ -564,21 +564,21 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
                   </div>
                   {referenceSolvent.costPerKg !== '' && referenceSolvent.costPerKg !== undefined && (
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Cost:</span>
-                      <span className="font-semibold text-slate-800">${Number(referenceSolvent.costPerKg).toFixed(2)}/kg</span>
+                      <span className="text-slate-500 dark:text-slate-400">Cost:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-100">${Number(referenceSolvent.costPerKg).toFixed(2)}/kg</span>
                     </div>
                   )}
                   {getExperimentalSolubility(referenceSolvent.name) !== null && (
-                    <div className="flex justify-between pt-2 border-t border-slate-200">
-                      <span className="text-slate-500">Your Sol:</span>
-                      <span className="font-bold text-blue-600">{getExperimentalSolubility(referenceSolvent.name)?.toFixed(2)} mg/mL</span>
+                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                      <span className="text-slate-500 dark:text-slate-400">Your Sol:</span>
+                      <span className="font-bold text-blue-600 dark:text-blue-400">{getExperimentalSolubility(referenceSolvent.name)?.toFixed(2)} mg/mL</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Action Buttons for Tools */}
-              <div className="mt-5 pt-3 border-t border-slate-200 flex flex-col gap-2">
+              <div className="mt-5 pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-2">
                 <button
                   onClick={() => setShowHansenModal(true)}
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
@@ -607,16 +607,16 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
       {referenceSolvent && (
         <div className="space-y-8">
           {/* Action Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
             <div>
-              <h3 className="text-base font-bold text-slate-800">Replacement Recommendations for {referenceSolvent.name}</h3>
-              <p className="text-xs text-slate-500">Ranked by Hansen parameter proximity, toxicological rating, and physical properties</p>
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Replacement Recommendations for {referenceSolvent.name}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Ranked by Hansen parameter proximity, toxicological rating, and physical properties</p>
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setShowHansenModal(true)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors border border-purple-200 cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 px-3 py-1.5 rounded-lg transition-colors border border-purple-200 dark:border-purple-800 cursor-pointer"
                 title="View interactive 3D Hansen Space visualization"
               >
                 <Compass size={15} />
@@ -629,7 +629,7 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
                   setSelectedEhsBinary(null);
                   setShowEhsModal(true);
                 }}
-                className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-200 cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 px-3 py-1.5 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800 cursor-pointer"
                 title="View EHS Radar comparison against reference solvent"
               >
                 <ShieldCheck size={15} />
@@ -640,8 +640,8 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
 
           {/* Section 1: Top Drop-In Pure Replacements */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3 flex items-center gap-2">
-              <Activity size={16} className="text-blue-600" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-3 flex items-center gap-2">
+              <Activity size={16} className="text-blue-600 dark:text-blue-400" />
               Top Drop-in Pure Replacements
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -649,7 +649,7 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
                 <CandidateCard key={c.solvent.id} data={c} isDropIn={true} />
               ))}
               {dropInReplacements.length === 0 && (
-                <div className="col-span-full text-center py-8 text-slate-500 bg-white rounded-xl border border-slate-200 border-dashed">
+                <div className="col-span-full text-center py-8 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-dashed">
                   No suitable pure solvent replacements found for the given criteria.
                 </div>
               )}
@@ -660,25 +660,25 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
           {allowBinaryMixtures && binaryMixtures.length > 0 && (
             <div className="pt-2">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-purple-700 flex items-center gap-2">
-                  <Beaker size={16} className="text-purple-600" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                  <Beaker size={16} className="text-purple-600 dark:text-purple-400" />
                   Synergistic Binary Solvent Mixtures (Green Blends)
                 </h4>
-                <span className="text-xs text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded-full font-medium">
                   {binaryMixtures.length} Optimized Blends Found
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mb-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
                 By combining two green solvents, the resulting mixture achieves a closer Hansen solubility match than either individual component alone.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {binaryMixtures.map((b) => (
-                  <div key={b.id} className="p-4 rounded-xl border bg-purple-50/20 border-purple-200 shadow-xs flex flex-col justify-between">
+                  <div key={b.id} className="p-4 rounded-xl border bg-purple-50/20 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/60 shadow-xs flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h4 className="font-bold text-purple-950 text-sm flex items-center gap-1.5">
+                          <h4 className="font-bold text-purple-950 dark:text-purple-200 text-sm flex items-center gap-1.5">
                             {b.name}
                           </h4>
                           <div className="flex gap-1.5 mt-1">
@@ -688,28 +688,28 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xl font-black text-purple-700">{b.similarity.toFixed(1)}%</div>
-                          <div className="text-[11px] text-slate-500">HSP Similarity</div>
+                          <div className="text-xl font-black text-purple-700 dark:text-purple-300">{b.similarity.toFixed(1)}%</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">HSP Similarity</div>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs mt-3">
                         <div>
-                          <span className="text-slate-500">Blended EHS:</span>
+                          <span className="text-slate-500 dark:text-slate-400">Blended EHS:</span>
                           <div className="flex items-center gap-2 mt-1">
-                            <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                               <div 
                                 className={`h-full ${getEhsColor(b.ehsScore)}`}
                                 style={{ width: `${b.ehsScore * 10}%` }}
                               ></div>
                             </div>
-                            <span className="font-semibold text-slate-700">{b.ehsScore}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-200">{b.ehsScore}</span>
                           </div>
                         </div>
 
                         <div>
-                          <span className="text-slate-500">Est. Bulk Cost:</span>
-                          <div className="font-medium text-slate-700 mt-1">
+                          <span className="text-slate-500 dark:text-slate-400">Est. Bulk Cost:</span>
+                          <div className="font-medium text-slate-700 dark:text-slate-200 mt-1">
                             {b.costPerKg !== undefined
                               ? `$${b.costPerKg.toFixed(2)} / kg`
                               : <span className="text-slate-400 italic">Partial data</span>}
@@ -717,34 +717,34 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
                         </div>
 
                         <div>
-                          <span className="text-slate-500">Blended BP:</span>
-                          <div className="font-medium text-slate-700">~{b.boilingPoint}°C</div>
+                          <span className="text-slate-500 dark:text-slate-400">Blended BP:</span>
+                          <div className="font-medium text-slate-700 dark:text-slate-200">~{b.boilingPoint}°C</div>
                         </div>
                         <div>
-                          <span className="text-slate-500">Blended Polarity:</span>
-                          <div className="font-medium text-slate-700">{b.polarityIndex}</div>
+                          <span className="text-slate-500 dark:text-slate-400">Blended Polarity:</span>
+                          <div className="font-medium text-slate-700 dark:text-slate-200">{b.polarityIndex}</div>
                         </div>
 
                         <div className="col-span-2">
-                          <span className="text-slate-500">HSP Vector (dD / dP / dH):</span>
-                          <div className="font-mono text-[11px] text-slate-600">
+                          <span className="text-slate-500 dark:text-slate-400">HSP Vector (dD / dP / dH):</span>
+                          <div className="font-mono text-[11px] text-slate-600 dark:text-slate-300">
                             {b.hansenD} / {b.hansenP} / {b.hansenH}
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-3 mt-3 border-t border-purple-100 flex items-center justify-between">
+                    <div className="pt-3 mt-3 border-t border-purple-100 dark:border-purple-900/40 flex items-center justify-between">
                       <button
                         onClick={() => handleOpenEhsForBinary(b)}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 hover:text-purple-800 bg-purple-100/60 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors cursor-pointer border border-purple-300"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-200 hover:text-purple-800 dark:hover:text-purple-100 bg-purple-100/60 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 px-2.5 py-1 rounded-md transition-colors cursor-pointer border border-purple-300 dark:border-purple-700"
                         title="Compare blended Health, Safety & Environment profile against reference"
                       >
                         <ShieldCheck size={14} />
                         Compare EHS
                       </button>
 
-                      <span className="text-[11px] text-purple-700 font-semibold">
+                      <span className="text-[11px] text-purple-700 dark:text-purple-300 font-semibold">
                         Vol: {Math.round(b.fraction1 * 100)}% / {Math.round(b.fraction2 * 100)}%
                       </span>
                     </div>

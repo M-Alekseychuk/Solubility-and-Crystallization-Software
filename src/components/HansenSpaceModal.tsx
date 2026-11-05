@@ -283,6 +283,8 @@ export function HansenSpaceModal({
       eye = { x: 2.5, y: 0.0, z: 0.0 };
     }
 
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+
     return {
       autosize: true,
       margin: { l: 10, r: 10, b: 10, t: 10 },
@@ -292,36 +294,42 @@ export function HansenSpaceModal({
       legend: {
         x: 0.02,
         y: 0.98,
-        bgcolor: 'rgba(255,255,255,0.85)',
-        bordercolor: '#e2e8f0',
+        bgcolor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255,255,255,0.85)',
+        bordercolor: isDark ? '#334155' : '#e2e8f0',
         borderwidth: 1,
-        font: { size: 11, color: '#334155' }
+        font: { size: 11, color: isDark ? '#e2e8f0' : '#334155' }
       },
       scene: {
         aspectmode: 'cube',
         camera: { eye },
         xaxis: {
-          title: { text: 'Dispersion dD (MPa)¹/²', font: { size: 12, color: '#334155' } },
-          backgroundcolor: '#f8fafc',
-          gridcolor: '#e2e8f0',
+          title: { text: 'Dispersion dD (MPa)¹/²', font: { size: 12, color: isDark ? '#ffffff' : '#334155' } },
+          tickfont: { size: 10, color: isDark ? '#ffffff' : '#334155' },
+          color: isDark ? '#ffffff' : '#334155',
+          backgroundcolor: isDark ? '#1e293b' : '#f8fafc',
+          gridcolor: isDark ? '#334155' : '#e2e8f0',
           showbackground: true,
-          zerolinecolor: '#cbd5e1',
+          zerolinecolor: isDark ? '#475569' : '#cbd5e1',
           range: [12, 22]
         },
         yaxis: {
-          title: { text: 'Polarity dP (MPa)¹/²', font: { size: 12, color: '#334155' } },
-          backgroundcolor: '#f8fafc',
-          gridcolor: '#e2e8f0',
+          title: { text: 'Polarity dP (MPa)¹/²', font: { size: 12, color: isDark ? '#ffffff' : '#334155' } },
+          tickfont: { size: 10, color: isDark ? '#ffffff' : '#334155' },
+          color: isDark ? '#ffffff' : '#334155',
+          backgroundcolor: isDark ? '#1e293b' : '#f8fafc',
+          gridcolor: isDark ? '#334155' : '#e2e8f0',
           showbackground: true,
-          zerolinecolor: '#cbd5e1',
+          zerolinecolor: isDark ? '#475569' : '#cbd5e1',
           range: [0, 26]
         },
         zaxis: {
-          title: { text: 'Hydrogen bonding dH (MPa)¹/²', font: { size: 12, color: '#334155' } },
-          backgroundcolor: '#f8fafc',
-          gridcolor: '#e2e8f0',
+          title: { text: 'Hydrogen bonding dH (MPa)¹/²', font: { size: 12, color: isDark ? '#ffffff' : '#334155' } },
+          tickfont: { size: 10, color: isDark ? '#ffffff' : '#334155' },
+          color: isDark ? '#ffffff' : '#334155',
+          backgroundcolor: isDark ? '#1e293b' : '#f8fafc',
+          gridcolor: isDark ? '#334155' : '#e2e8f0',
           showbackground: true,
-          zerolinecolor: '#cbd5e1',
+          zerolinecolor: isDark ? '#475569' : '#cbd5e1',
           range: [0, 44]
         }
       }
@@ -332,24 +340,24 @@ export function HansenSpaceModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/90">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 text-green-700 rounded-xl">
+            <div className="p-2 bg-green-100 dark:bg-emerald-950/60 text-green-700 dark:text-emerald-300 rounded-xl">
               <Compass size={22} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-800">Hansen Space 3D</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-medium">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Hansen Space 3D</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium">
                   {validSolvents.length} Solvents with HSP
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5 font-mono">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-mono">
                 {referenceSolvent ? (
                   <span>
-                    Reference HSP: <strong className="text-red-600">{referenceSolvent.name}</strong> (dD = {referenceSolvent.hansenD ?? 'N/A'}, dP = {referenceSolvent.hansenP ?? 'N/A'}, dH = {referenceSolvent.hansenH ?? 'N/A'})
+                    Reference HSP: <strong className="text-red-600 dark:text-rose-400">{referenceSolvent.name}</strong> (dD = {referenceSolvent.hansenD ?? 'N/A'}, dP = {referenceSolvent.hansenP ?? 'N/A'}, dH = {referenceSolvent.hansenH ?? 'N/A'})
                   </span>
                 ) : (
                   'Select a reference solvent on the main tab to highlight its target coordinates'
@@ -361,7 +369,7 @@ export function HansenSpaceModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
               title="Close (Esc)"
             >
               <X size={20} />
@@ -370,16 +378,16 @@ export function HansenSpaceModal({
         </div>
 
         {/* Action / View Controls Bar */}
-        <div className="px-6 py-2.5 bg-slate-100/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-6 py-2.5 bg-slate-100/70 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-600 flex items-center gap-1.5">
+            <span className="font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
               <Eye size={14} /> Camera View:
             </span>
-            <div className="inline-flex bg-white rounded-lg border border-slate-300 p-0.5 shadow-sm">
+            <div className="inline-flex bg-white dark:bg-slate-900 rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 shadow-sm">
               <button
                 onClick={() => setCameraView('default')}
                 className={`px-2.5 py-1 rounded font-medium transition-colors ${
-                  cameraView === 'default' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                  cameraView === 'default' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 Default 3D
@@ -387,7 +395,7 @@ export function HansenSpaceModal({
               <button
                 onClick={() => setCameraView('top')}
                 className={`px-2.5 py-1 rounded font-medium transition-colors ${
-                  cameraView === 'top' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                  cameraView === 'top' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 Top (dD vs dP)
@@ -395,7 +403,7 @@ export function HansenSpaceModal({
               <button
                 onClick={() => setCameraView('front')}
                 className={`px-2.5 py-1 rounded font-medium transition-colors ${
-                  cameraView === 'front' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                  cameraView === 'front' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 Front (dP vs dH)
@@ -403,7 +411,7 @@ export function HansenSpaceModal({
               <button
                 onClick={() => setCameraView('side')}
                 className={`px-2.5 py-1 rounded font-medium transition-colors ${
-                  cameraView === 'side' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                  cameraView === 'side' ? 'bg-green-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 Side (dD vs dH)
@@ -413,13 +421,13 @@ export function HansenSpaceModal({
 
           {/* Quick Solvent Search & Locate */}
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-600 flex items-center gap-1">
-              <Compass size={13} className="text-amber-600" /> Inspect Solvent:
+            <span className="font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1">
+              <Compass size={13} className="text-amber-600 dark:text-amber-400" /> Inspect Solvent:
             </span>
             <select
               value={searchSolventId}
               onChange={e => setSearchSolventId(e.target.value)}
-              className="px-2.5 py-1 text-xs border border-slate-300 rounded-lg bg-white text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none max-w-[230px]"
+              className="px-2.5 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 focus:outline-none max-w-[230px]"
             >
               <option value="">-- Find Solvent in 3D Space --</option>
               {validSolvents
@@ -434,7 +442,7 @@ export function HansenSpaceModal({
             {searchSolventId && (
               <button
                 onClick={() => setSearchSolventId('')}
-                className="text-slate-400 hover:text-slate-600 px-1 py-0.5 text-xs cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-1 py-0.5 text-xs cursor-pointer"
                 title="Clear selection"
               >
                 ✕
@@ -443,7 +451,7 @@ export function HansenSpaceModal({
           </div>
 
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-1.5 cursor-pointer select-none text-slate-700">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={showAllSolvents}
@@ -454,7 +462,7 @@ export function HansenSpaceModal({
             </label>
 
             {binaryMixtures.length > 0 && (
-              <label className="flex items-center gap-1.5 cursor-pointer select-none text-purple-700 font-medium">
+              <label className="flex items-center gap-1.5 cursor-pointer select-none text-purple-700 dark:text-purple-300 font-medium">
                 <input
                   type="checkbox"
                   checked={showBinaryMixtures}
@@ -469,35 +477,35 @@ export function HansenSpaceModal({
 
         {/* Highlighted Solvent Inspector Banner */}
         {highlightedSolvent && (
-          <div className="px-6 py-2.5 bg-amber-50/95 border-b border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs animate-in fade-in">
+          <div className="px-6 py-2.5 bg-amber-50/95 dark:bg-amber-950/60 border-b border-amber-200 dark:border-amber-900/60 flex flex-wrap items-center justify-between gap-3 text-xs animate-in fade-in">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-bold text-amber-950 flex items-center gap-1.5 text-sm">
+              <span className="font-bold text-amber-950 dark:text-amber-200 flex items-center gap-1.5 text-sm">
                 <span className="w-2.5 h-2.5 rotate-45 bg-amber-500 inline-block"></span>
                 {highlightedSolvent.name}
               </span>
               {highlightedSolvent.casNumber && (
-                <span className="text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-mono text-[11px]">
+                <span className="text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded font-mono text-[11px]">
                   CAS: {highlightedSolvent.casNumber}
                 </span>
               )}
-              <span className="text-amber-900 font-mono">
+              <span className="text-amber-900 dark:text-amber-200 font-mono">
                 δD: <strong>{highlightedSolvent.hansenD}</strong> | δP: <strong>{highlightedSolvent.hansenP}</strong> | δH: <strong>{highlightedSolvent.hansenH}</strong>
               </span>
-              <span className="text-amber-800">
+              <span className="text-amber-800 dark:text-amber-300">
                 EHS Green Score: <strong>{highlightedSolvent.ehsScore ?? '-'}/10</strong>
               </span>
               {highlightedSolvent.boilingPoint !== '' && (
-                <span className="text-amber-800">
+                <span className="text-amber-800 dark:text-amber-300">
                   BP: <strong>{highlightedSolvent.boilingPoint}°C</strong>
                 </span>
               )}
               {highlightedSolvent.meltingPoint !== '' && (
-                <span className="text-amber-800">
+                <span className="text-amber-800 dark:text-amber-300">
                   MP: <strong>{highlightedSolvent.meltingPoint}°C</strong>
                 </span>
               )}
               {highlightedSolvent.viscosity !== undefined && (
-                <span className="text-amber-800">
+                <span className="text-amber-800 dark:text-amber-300">
                   Viscosity: <strong>{highlightedSolvent.viscosity} mPa·s</strong>
                 </span>
               )}
@@ -516,7 +524,7 @@ export function HansenSpaceModal({
         )}
 
         {/* 3D Canvas Area */}
-        <div className="relative flex-1 min-h-[500px] h-[60vh] bg-slate-50/50">
+        <div className="relative flex-1 min-h-[500px] h-[60vh] bg-slate-50/50 dark:bg-slate-900">
           <Plot
             data={plotData}
             layout={plotLayout}
@@ -530,31 +538,31 @@ export function HansenSpaceModal({
           />
 
           {/* Quick Helper Floating Pill */}
-          <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-xs border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-600 shadow-sm pointer-events-none max-w-sm">
-            <div className="font-semibold text-slate-800 flex items-center gap-1">
-              <Info size={13} className="text-blue-500" /> Interaction Tip:
+          <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-600 dark:text-slate-300 shadow-sm pointer-events-none max-w-sm">
+            <div className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+              <Info size={13} className="text-blue-500 dark:text-blue-400" /> Interaction Tip:
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Click & drag to rotate in 3D. Scroll to zoom in/out. Right-click and drag to pan across axes.
             </div>
           </div>
         </div>
 
         {/* Footer Summary / Quick stats */}
-        <div className="px-6 py-3 border-t border-slate-200 bg-white flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
+        <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-red-600 inline-block"></span>
-              <strong>Target Reference</strong>
+              <strong className="text-slate-700 dark:text-slate-200">Target Reference</strong>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
-              <strong>Top Drop-in Matches</strong>
+              <strong className="text-slate-700 dark:text-slate-200">Top Drop-in Matches</strong>
             </span>
             {binaryMixtures.length > 0 && (
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rotate-45 bg-purple-600 inline-block"></span>
-                <strong>Optimized Binary Mixtures</strong>
+                <strong className="text-slate-700 dark:text-slate-200">Optimized Binary Mixtures</strong>
               </span>
             )}
             <span className="flex items-center gap-1.5">
@@ -564,7 +572,7 @@ export function HansenSpaceModal({
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors cursor-pointer"
+            className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors cursor-pointer"
           >
             Close
           </button>

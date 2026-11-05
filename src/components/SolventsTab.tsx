@@ -301,19 +301,19 @@ export function SolventsTab() {
               </div>
             )}
 
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-lg">
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-1 rounded-lg">
               <button
                 onClick={handleSaveAsStandard}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-blue-700 hover:bg-white px-2.5 py-1 rounded transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-700 px-2.5 py-1 rounded transition-colors cursor-pointer"
                 title="Save the current solvent list as the software standard"
               >
-                <BookmarkCheck size={14} className="text-blue-600" />
+                <BookmarkCheck size={14} className="text-blue-600 dark:text-blue-400" />
                 <span>Save as Standard</span>
               </button>
-              <div className="w-px h-4 bg-slate-300"></div>
+              <div className="w-px h-4 bg-slate-300 dark:bg-slate-600"></div>
               <button
                 onClick={handleResetToStandard}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 px-2 py-1 rounded transition-colors cursor-pointer"
                 title="Reset lab solvents inventory to the software standard"
               >
                 <RotateCcw size={13} />
@@ -321,9 +321,9 @@ export function SolventsTab() {
               </button>
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1 rounded-lg">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-1 rounded-lg">
               <label 
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 px-2 py-1 rounded transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded transition-colors cursor-pointer"
                 title="Import Solvents from JSON"
               >
                 <Upload size={14} />
@@ -336,14 +336,14 @@ export function SolventsTab() {
                   className="hidden" 
                 />
               </label>
-              <div className="w-px h-4 bg-slate-300"></div>
+              <div className="w-px h-4 bg-slate-300 dark:bg-slate-600"></div>
               
               <div className="flex items-center gap-1.5 px-2">
-                <span className="text-xs text-slate-500 font-medium">ICH:</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">ICH:</span>
                 <select
                   value={filterIchClass || ''}
                   onChange={(e) => setFilterIchClass(e.target.value ? Number(e.target.value) : null)}
-                  className="text-xs border border-slate-300 rounded px-1 py-1 text-slate-700 bg-white"
+                  className="text-xs border border-slate-300 dark:border-slate-600 rounded px-1 py-1 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 focus:outline-none"
                 >
                   <option value="">All</option>
                   <option value="1">Class 1</option>
@@ -352,11 +352,11 @@ export function SolventsTab() {
                 </select>
               </div>
               <div className="flex items-center gap-1.5 px-2">
-                <span className="text-xs text-slate-500 font-medium">EHS &gt;=:</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">EHS &gt;=:</span>
                 <select
                   value={minEhsScore || ''}
                   onChange={(e) => setMinEhsScore(e.target.value ? Number(e.target.value) : null)}
-                  className="text-xs border border-slate-300 rounded px-1 py-1 text-slate-700 bg-white"
+                  className="text-xs border border-slate-300 dark:border-slate-600 rounded px-1 py-1 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 focus:outline-none"
                 >
                   <option value="">Any</option>
                   <option value="5">5</option>
@@ -364,19 +364,19 @@ export function SolventsTab() {
                 </select>
               </div>
 
-              <div className="w-px h-4 bg-slate-300"></div>
+              <div className="w-px h-4 bg-slate-300 dark:bg-slate-600"></div>
               <button 
                 onClick={handleExportJSON}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded transition-colors cursor-pointer"
                 title="Export Solvents to JSON"
               >
                 <FileJson size={14} />
                 JSON
               </button>
-              <div className="w-px h-4 bg-slate-300"></div>
+              <div className="w-px h-4 bg-slate-300 dark:bg-slate-600"></div>
               <button 
                 onClick={handleExport}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded transition-colors cursor-pointer"
                 title="Export Solvents to Excel"
               >
                 <FileSpreadsheet size={14} />
@@ -386,10 +386,10 @@ export function SolventsTab() {
             
             <button 
               onClick={() => setIsEditing(!isEditing)}
-              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
+              className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
                 isEditing 
-                  ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' 
-                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shadow-sm'
+                  ? 'bg-green-50 dark:bg-emerald-950/40 text-green-700 dark:text-emerald-300 border border-green-200 dark:border-emerald-800 hover:bg-green-100 dark:hover:bg-emerald-900/50' 
+                  : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm'
               }`}
             >
               {isEditing ? (
@@ -406,7 +406,7 @@ export function SolventsTab() {
             </button>
             <button 
               onClick={addSolvent}
-              className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-md transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-transparent dark:border-blue-800/60 px-3 py-1.5 rounded-md transition-colors cursor-pointer"
             >
               <Plus size={14} />
               Add Solvent
@@ -417,14 +417,14 @@ export function SolventsTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-600 uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                 <th 
-                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 transition-colors group"
+                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center gap-1">
                     Solvent Name
-                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 ${sortField === 'name' ? 'text-blue-500' : ''}`} />
+                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 ${sortField === 'name' ? 'text-blue-500 dark:text-blue-400' : ''}`} />
                   </div>
                 </th>
                 <th className="py-2.5 px-3 font-medium normal-case tracking-normal">Cost ($/kg)</th>
@@ -434,42 +434,42 @@ export function SolventsTab() {
                 <th className="py-2.5 px-3 font-medium">ICH Class</th>
                 <th className="py-2.5 px-3 font-medium">EHS Score</th>
                 <th 
-                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 transition-colors group"
+                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
                   onClick={() => handleSort('dielectricConstant')}
                 >
                   <div className="flex items-center gap-1">
                     Dielectric Constant
-                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 ${sortField === 'dielectricConstant' ? 'text-blue-500' : ''}`} />
+                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 ${sortField === 'dielectricConstant' ? 'text-blue-500 dark:text-blue-400' : ''}`} />
                   </div>
                 </th>
                 <th className="py-2.5 px-3 font-medium">Polarity Index</th>
                 <th 
-                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 transition-colors group"
+                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
                   onClick={() => handleSort('polarityProfile')}
                 >
                   <div className="flex items-center gap-1">
                     Polarity
-                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 ${sortField === 'polarityProfile' ? 'text-blue-500' : ''}`} />
+                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 ${sortField === 'polarityProfile' ? 'text-blue-500 dark:text-blue-400' : ''}`} />
                   </div>
                 </th>
                 <th 
-                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 transition-colors group"
+                  className="py-2.5 px-3 font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group"
                   onClick={() => handleSort('waterMiscibility')}
                 >
                   <div className="flex items-center gap-1">
                     Water Miscibility
-                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 ${sortField === 'waterMiscibility' ? 'text-blue-500' : ''}`} />
+                    <ArrowUpDown size={14} className={`text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 ${sortField === 'waterMiscibility' ? 'text-blue-500 dark:text-blue-400' : ''}`} />
                   </div>
                 </th>
                 {isEditing && <th className="py-2.5 px-3 font-medium w-24 text-center">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {sortedSolvents.map((solvent) => {
                 const isNonFlammable = solvent.name === 'Water' || solvent.name === 'Dichloromethane' || solvent.name === 'Chloroform' || solvent.name === 'Carbon tetrachloride';
                 
                 return (
-                  <tr key={solvent.id} className="text-sm hover:bg-slate-50/50">
+                  <tr key={solvent.id} className="text-sm hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-2 px-3">
                       {isEditing ? (
                         <div className="flex items-center gap-1">
@@ -477,12 +477,12 @@ export function SolventsTab() {
                             type="text" 
                             value={solvent.name}
                             onChange={(e) => updateSolvent(solvent.id, 'name', e.target.value)}
-                            className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                             placeholder="e.g. Methanol"
                           />
                         </div>
                       ) : (
-                        <span className="font-medium text-slate-800">{solvent.name}</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-100">{solvent.name}</span>
                       )}
                     </td>
                     <td className="py-2 px-3">
@@ -495,12 +495,12 @@ export function SolventsTab() {
                             min="0"
                             value={solvent.costPerKg ?? ''}
                             onChange={(e) => updateSolvent(solvent.id, 'costPerKg', e.target.value === '' ? '' : Number(e.target.value))}
-                            className="w-24 pl-5 border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            className="w-24 pl-5 border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                             placeholder="0.00"
                           />
                         </div>
                       ) : (
-                        <span className={solvent.costPerKg !== '' && solvent.costPerKg !== undefined ? "font-medium text-slate-700" : "text-slate-300 italic"}>
+                        <span className={solvent.costPerKg !== '' && solvent.costPerKg !== undefined ? "font-medium text-slate-700 dark:text-slate-200" : "text-slate-300 dark:text-slate-600 italic"}>
                           {solvent.costPerKg !== '' && solvent.costPerKg !== undefined ? `$${Number(solvent.costPerKg).toFixed(2)}` : '-'}
                         </span>
                       )}
@@ -512,11 +512,11 @@ export function SolventsTab() {
                           step="any"
                           value={solvent.boilingPoint}
                           onChange={(e) => updateSolvent(solvent.id, 'boilingPoint', e.target.value === '' ? '' : Number(e.target.value))}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           placeholder="e.g. 64.7"
                         />
                       ) : (
-                        <span className={solvent.boilingPoint !== '' && solvent.boilingPoint !== undefined ? "text-slate-700" : "text-slate-300 italic"}>
+                        <span className={solvent.boilingPoint !== '' && solvent.boilingPoint !== undefined ? "text-slate-700 dark:text-slate-200" : "text-slate-300 dark:text-slate-600 italic"}>
                           {solvent.boilingPoint !== '' && solvent.boilingPoint !== undefined ? solvent.boilingPoint : '-'}
                         </span>
                       )}
@@ -528,11 +528,11 @@ export function SolventsTab() {
                           step="any"
                           value={solvent.meltingPoint}
                           onChange={(e) => updateSolvent(solvent.id, 'meltingPoint', e.target.value === '' ? '' : Number(e.target.value))}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           placeholder="e.g. -97.6"
                         />
                       ) : (
-                        <span className={solvent.meltingPoint !== '' && solvent.meltingPoint !== undefined ? "text-slate-700" : "text-slate-300 italic"}>
+                        <span className={solvent.meltingPoint !== '' && solvent.meltingPoint !== undefined ? "text-slate-700 dark:text-slate-200" : "text-slate-300 dark:text-slate-600 italic"}>
                           {solvent.meltingPoint !== '' && solvent.meltingPoint !== undefined ? solvent.meltingPoint : '-'}
                         </span>
                       )}
@@ -544,14 +544,14 @@ export function SolventsTab() {
                           step="any"
                           value={solvent.flashPoint || ''}
                           onChange={(e) => updateSolvent(solvent.id, 'flashPoint', e.target.value === '' ? '' : Number(e.target.value))}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           placeholder={isNonFlammable ? "None" : "e.g. 11"}
                         />
                       ) : (
-                        <span className="text-slate-700">
+                        <span className="text-slate-700 dark:text-slate-200">
                           {solvent.flashPoint !== '' && solvent.flashPoint !== undefined 
                             ? solvent.flashPoint 
-                            : isNonFlammable ? <span className="text-slate-400 text-xs italic">None</span> : <span className="text-slate-300 italic">-</span>
+                            : isNonFlammable ? <span className="text-slate-400 dark:text-slate-500 text-xs italic">None</span> : <span className="text-slate-300 dark:text-slate-600 italic">-</span>
                           }
                         </span>
                       )}
@@ -561,7 +561,7 @@ export function SolventsTab() {
                         <select
                           value={solvent.ichClass || ''}
                           onChange={(e) => updateSolvent(solvent.id, 'ichClass', e.target.value ? Number(e.target.value) : '')}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                         >
                           <option value="">-</option>
                           <option value="1">1 (Avoid)</option>
@@ -569,8 +569,8 @@ export function SolventsTab() {
                           <option value="3">3 (Low toxic)</option>
                         </select>
                       ) : (
-                        <span className="text-slate-700 font-medium">
-                          {solvent.ichClass ? `Class ${solvent.ichClass}` : <span className="text-slate-300 italic font-normal">-</span>}
+                        <span className="text-slate-700 dark:text-slate-200 font-medium">
+                          {solvent.ichClass ? `Class ${solvent.ichClass}` : <span className="text-slate-300 dark:text-slate-600 italic font-normal">-</span>}
                         </span>
                       )}
                     </td>
@@ -581,11 +581,11 @@ export function SolventsTab() {
                           min="1" max="10"
                           value={solvent.ehsScore || ''}
                           onChange={(e) => updateSolvent(solvent.id, 'ehsScore', e.target.value === '' ? '' : Number(e.target.value))}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           placeholder="1-10"
                         />
                       ) : (
-                        <span className={`font-medium ${(Number(solvent.ehsScore)||0) >= 8 ? 'text-emerald-600' : (Number(solvent.ehsScore)||0) >= 5 ? 'text-amber-600' : Number(solvent.ehsScore) > 0 ? 'text-rose-600' : 'text-slate-300 italic font-normal'}`}>
+                        <span className={`font-semibold ${(Number(solvent.ehsScore)||0) >= 8 ? 'text-emerald-600 dark:text-emerald-400' : (Number(solvent.ehsScore)||0) >= 5 ? 'text-amber-600 dark:text-amber-400' : Number(solvent.ehsScore) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-300 dark:text-slate-600 italic font-normal'}`}>
                           {solvent.ehsScore || '-'}
                         </span>
                       )}
@@ -598,11 +598,11 @@ export function SolventsTab() {
                           step="any"
                           value={solvent.dielectricConstant}
                           onChange={(e) => updateSolvent(solvent.id, 'dielectricConstant', e.target.value === '' ? '' : Number(e.target.value))}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           placeholder="e.g. 33.0"
                         />
                       ) : (
-                        <span className={solvent.dielectricConstant !== '' && solvent.dielectricConstant !== undefined ? "text-slate-800 font-medium" : "text-slate-300 italic font-normal"}>
+                        <span className={solvent.dielectricConstant !== '' && solvent.dielectricConstant !== undefined ? "text-slate-800 dark:text-slate-100 font-medium" : "text-slate-300 dark:text-slate-600 italic font-normal"}>
                           {solvent.dielectricConstant !== '' && solvent.dielectricConstant !== undefined ? solvent.dielectricConstant : '-'}
                         </span>
                       )}
@@ -614,11 +614,11 @@ export function SolventsTab() {
                           step="0.1"
                           value={solvent.polarityIndex || ''}
                           onChange={(e) => updateSolvent(solvent.id, 'polarityIndex', e.target.value === '' ? '' : Number(e.target.value))}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           placeholder="e.g. 5.1"
                         />
                       ) : (
-                        <span className={solvent.polarityIndex !== '' && solvent.polarityIndex !== undefined ? "text-slate-700" : "text-slate-300 italic font-normal"}>
+                        <span className={solvent.polarityIndex !== '' && solvent.polarityIndex !== undefined ? "text-slate-700 dark:text-slate-200" : "text-slate-300 dark:text-slate-600 italic font-normal"}>
                           {solvent.polarityIndex || '-'}
                         </span>
                       )}
@@ -628,7 +628,7 @@ export function SolventsTab() {
                         <select
                           value={solvent.polarityProfile || ''}
                           onChange={(e) => updateSolvent(solvent.id, 'polarityProfile', e.target.value as any)}
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                         >
                           <option value="">Unknown</option>
                           <option value="Polar Aprotic">Polar Aprotic</option>
@@ -636,8 +636,8 @@ export function SolventsTab() {
                           <option value="Nonpolar">Nonpolar</option>
                         </select>
                       ) : (
-                        <span className="text-slate-700 whitespace-nowrap">
-                          {solvent.polarityProfile || <span className="text-slate-300 italic">-</span>}
+                        <span className="text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                          {solvent.polarityProfile || <span className="text-slate-300 dark:text-slate-600 italic">-</span>}
                         </span>
                       )}
                     </td>
@@ -647,7 +647,7 @@ export function SolventsTab() {
                           <select
                             value={solvent.waterMiscibility || ''}
                             onChange={(e) => updateSolvent(solvent.id, 'waterMiscibility', e.target.value as any)}
-                            className="border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none flex-1"
+                            className="border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none flex-1"
                           >
                             <option value="">Unknown</option>
                             <option value="Fully">Fully</option>
@@ -662,35 +662,35 @@ export function SolventsTab() {
                                 step="any"
                                 value={solvent.miscibilityPercentage === undefined ? '' : solvent.miscibilityPercentage}
                                 onChange={(e) => updateSolvent(solvent.id, 'miscibilityPercentage', e.target.value === '' ? '' : Number(e.target.value))}
-                                className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                className="w-full border border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                 placeholder="%"
                               />
-                              <span className="text-xs text-slate-500">%</span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">%</span>
                             </div>
                           )}
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           {solvent.waterMiscibility === 'Fully' && (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                               Fully
                             </span>
                           )}
                           {solvent.waterMiscibility === 'Partially' && (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 whitespace-nowrap">
                               <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
                               Partially {solvent.miscibilityPercentage ? `(~${solvent.miscibilityPercentage}%)` : ''}
                             </span>
                           )}
                           {solvent.waterMiscibility === 'Immiscible' && (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                               <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
                               Immiscible
                             </span>
                           )}
                           {!solvent.waterMiscibility && (
-                            <span className="text-slate-300 text-xs italic">-</span>
+                            <span className="text-slate-300 dark:text-slate-600 text-xs italic">-</span>
                           )}
                         </div>
                       )}
@@ -700,14 +700,14 @@ export function SolventsTab() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleAutoFillSingleRow(solvent.id)}
-                            className="text-slate-400 hover:text-blue-600 p-1 transition-colors"
+                            className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-1 transition-colors"
                             title="Auto-fill missing parameters for this solvent from reference database"
                           >
                             <Wand2 size={15} />
                           </button>
                           <button 
                             onClick={() => removeSolvent(solvent.id)}
-                            className="text-slate-400 hover:text-red-600 transition-colors p-1"
+                            className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
                             title="Remove solvent"
                           >
                             <Trash2 size={15} />
@@ -721,7 +721,7 @@ export function SolventsTab() {
             </tbody>
           </table>
           {solvents.length === 0 && (
-            <div className="text-center py-6 text-slate-500 text-sm">
+            <div className="text-center py-6 text-slate-500 dark:text-slate-400 text-sm">
               No solvents added yet. Click "Add Solvent" or "Import" to load your lab inventory.
             </div>
           )}

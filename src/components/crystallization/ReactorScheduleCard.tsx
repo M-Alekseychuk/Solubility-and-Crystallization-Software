@@ -45,6 +45,21 @@ export const ReactorScheduleCard: React.FC<ReactorScheduleCardProps> = ({
   const [showTable, setShowTable] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'timeline' | 'chart'>('timeline');
 
+  const [isDark, setIsDark] = useState(() => {
+    return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  });
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   const updateParam = <K extends keyof ReactorScheduleParams>(key: K, val: ReactorScheduleParams[K]) => {
     setScheduleParams(prev => ({ ...prev, [key]: val }));
   };
@@ -292,28 +307,31 @@ export const ReactorScheduleCard: React.FC<ReactorScheduleCardProps> = ({
         <div className="h-72 w-full pt-1">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={scheduleSummary.steps} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
               <XAxis
                 dataKey="timeMin"
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
-                label={{ value: 'Process Time (minutes)', position: 'bottom', offset: 5, fontSize: 11, fill: '#64748b' }}
+                label={{ value: 'Process Time (minutes)', position: 'bottom', offset: 5, fontSize: 11, fill: isDark ? '#ffffff' : '#64748b' }}
               />
               <YAxis
                 yAxisId="left"
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
-                label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 11, fill: '#64748b' }}
+                label={{ value: 'Temperature (°C)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 11, fill: isDark ? '#ffffff' : '#64748b' }}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                stroke="#6366f1"
+                stroke={isDark ? '#818cf8' : '#6366f1'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#6366f1' }}
                 tickLine={false}
-                label={{ value: 'Anti-Solvent Added (mL)', angle: 90, position: 'insideRight', offset: 15, fontSize: 11, fill: '#6366f1' }}
+                label={{ value: 'Anti-Solvent Added (mL)', angle: 90, position: 'insideRight', offset: 15, fontSize: 11, fill: isDark ? '#ffffff' : '#6366f1' }}
               />
               <RechartsTooltip
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}

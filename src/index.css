@@ -60,8 +60,8 @@
   @apply border-slate-700;
 }
 
-.dark .bg-slate-200\/50, .dark .bg-slate-100 {
-  @apply bg-slate-800/80;
+.dark .bg-slate-200\/50, .dark .bg-slate-100, .dark .bg-slate-100\/70, .dark .bg-slate-50\/80 {
+  @apply bg-slate-800/90 border-slate-700 text-slate-200;
 }
 
 .dark .bg-gradient-to-r.from-blue-100.to-green-100 {
@@ -76,12 +76,28 @@
   @apply bg-amber-900/40 border-amber-800 text-amber-200;
 }
 
-.dark .bg-green-50 {
-  @apply bg-green-900/40 border-green-800 text-green-200;
+.dark .bg-green-50, .dark .bg-emerald-50 {
+  @apply bg-emerald-950/40 border-emerald-800 text-emerald-200;
+}
+
+.dark .bg-green-100, .dark .bg-emerald-100 {
+  @apply bg-emerald-950/60 border-emerald-800 text-emerald-300;
 }
 
 .dark .bg-green-50\/50 {
   @apply bg-green-900/20;
+}
+
+.dark .bg-purple-50, .dark .bg-purple-50\/20 {
+  @apply bg-purple-950/30 border-purple-800/70 text-purple-200;
+}
+
+.dark .bg-purple-100, .dark .bg-purple-100\/60 {
+  @apply bg-purple-900/40 border-purple-700 text-purple-200;
+}
+
+.dark .bg-red-100, .dark .bg-rose-100 {
+  @apply bg-rose-950/50 border-rose-800 text-rose-300;
 }
 
 .dark .text-blue-900 {
@@ -92,7 +108,23 @@
   @apply text-amber-100;
 }
 
-.dark .text-green-900 {
-  @apply text-green-100;
+.dark .text-green-900, .dark .text-green-700, .dark .text-emerald-700, .dark .text-emerald-800 {
+  @apply text-emerald-300;
+}
+
+.dark .text-purple-700, .dark .text-purple-800, .dark .text-purple-900, .dark .text-purple-950 {
+  @apply text-purple-300;
+}
+
+.dark .text-purple-600 {
+  @apply text-purple-400;
+}
+
+.dark .border-purple-100, .dark .border-purple-200, .dark .border-purple-300 {
+  @apply border-purple-900/60;
+}
+
+.dark .text-red-700, .dark .text-rose-700 {
+  @apply text-rose-400;
 }
 

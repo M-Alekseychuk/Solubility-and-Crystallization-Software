@@ -70,6 +70,21 @@ export const PredictionTab: React.FC<PredictionTabProps> = ({ experimentId, samp
   const [desiredTemp, setDesiredTemp] = useState<string>(() => localStorage.getItem(`hplc-pred-temp-${experimentId}`) || '');
   const [desiredRatio, setDesiredRatio] = useState<string>(() => localStorage.getItem(`hplc-pred-ratio-${experimentId}`) || '');
 
+  const [isDark, setIsDark] = useState(() => {
+    return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  });
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(`hplc-pred-solv1-${experimentId}`, selectedSolvent1);
     localStorage.setItem(`hplc-pred-solv2-${experimentId}`, selectedSolvent2);
@@ -502,29 +517,49 @@ export const PredictionTab: React.FC<PredictionTabProps> = ({ experimentId, samp
   }, [surfaceData, scatter3DData, targetScatter3DPoint]);
 
   const plot3DLayout = useMemo(() => {
+    const axisTextColor = isDark ? '#ffffff' : '#334155';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : '#e2e8f0';
+    const zeroColor = isDark ? 'rgba(255, 255, 255, 0.4)' : '#cbd5e1';
+    const bgColor = isDark ? '#1e293b' : '#f8fafc';
+
     return {
       autosize: true,
       showlegend: false,
       margin: { l: 0, r: 0, b: 0, t: 0 },
       scene: {
         xaxis: { 
-          title: { text: `${selectedSolvent1} (%)`, font: { size: 16 } },
-          tickfont: { size: 13 }
+          title: { text: `${selectedSolvent1} (%)`, font: { size: 16, color: axisTextColor } },
+          tickfont: { size: 13, color: axisTextColor },
+          color: axisTextColor,
+          gridcolor: gridColor,
+          zerolinecolor: zeroColor,
+          backgroundcolor: bgColor,
+          showbackground: true
         },
         yaxis: { 
-          title: { text: 'Temp (°C)', font: { size: 16 } },
-          tickfont: { size: 13 }
+          title: { text: 'Temp (°C)', font: { size: 16, color: axisTextColor } },
+          tickfont: { size: 13, color: axisTextColor },
+          color: axisTextColor,
+          gridcolor: gridColor,
+          zerolinecolor: zeroColor,
+          backgroundcolor: bgColor,
+          showbackground: true
         },
         zaxis: { 
-          title: { text: 'Solubility', font: { size: 16 } },
-          tickfont: { size: 13 }
+          title: { text: 'Solubility (mg/mL)', font: { size: 16, color: axisTextColor } },
+          tickfont: { size: 13, color: axisTextColor },
+          color: axisTextColor,
+          gridcolor: gridColor,
+          zerolinecolor: zeroColor,
+          backgroundcolor: bgColor,
+          showbackground: true
         },
         aspectmode: 'cube' as const
       },
       paper_bgcolor: 'transparent',
       plot_bgcolor: 'transparent'
     };
-  }, [selectedSolvent1]);
+  }, [selectedSolvent1, isDark]);
 
   const predictionContext = useMemo(() => {
     return {
@@ -919,37 +954,45 @@ export const PredictionTab: React.FC<PredictionTabProps> = ({ experimentId, samp
                   ) : (
                     <ResponsiveContainer>
                       <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 25, left: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" opacity={0.3} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#cbd5e1'} opacity={isDark ? 0.6 : 0.3} />
                         <XAxis 
                           dataKey="x" 
                           type="number" 
                           domain={predictionTask === 'composition' ? [0, 100] : ['dataMin - 2', 'dataMax + 2']}
                           ticks={predictionTask === 'composition' ? [0, 20, 40, 60, 80, 100] : undefined}
                           name={predictionTask === 'composition' ? `${selectedSolvent1} (%)` : 'Temperature (°C)'}
+                          stroke={isDark ? '#64748b' : '#cbd5e1'}
                           label={{ 
                             value: predictionTask === 'composition' ? `${selectedSolvent1} Fraction (%)` : 'Temperature (°C)', 
                             position: 'insideBottom', 
                             offset: -15,
-                            style: { fill: '#64748b', fontSize: 16, fontWeight: 500 }
+                            style: { fill: isDark ? '#ffffff' : '#64748b', fontSize: 16, fontWeight: 500 }
                           }}
-                          tick={{ fill: '#64748b', fontSize: 14 }}
+                          tick={{ fill: isDark ? '#ffffff' : '#64748b', fontSize: 14 }}
                         />
                         <YAxis 
                           name="Solubility (mg/mL)" 
                           domain={[0, maxYValue]}
                           allowDataOverflow={true}
+                          stroke={isDark ? '#64748b' : '#cbd5e1'}
                           tickFormatter={(val) => Number(val.toFixed(2)).toString()}
                           label={{ 
                             value: 'Solubility (mg/mL)', 
                             angle: -90, 
                             position: 'insideLeft',
-                            style: { fill: '#64748b', fontSize: 16, fontWeight: 500 } 
+                            style: { fill: isDark ? '#ffffff' : '#64748b', fontSize: 16, fontWeight: 500 } 
                           }}
-                          tick={{ fill: '#64748b', fontSize: 14 }}
+                          tick={{ fill: isDark ? '#ffffff' : '#64748b', fontSize: 14 }}
                         />
                         <RechartsTooltip 
-                          cursor={{ strokeDasharray: '3 3' }}
-                          contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          cursor={{ strokeDasharray: '3 3', stroke: isDark ? '#475569' : '#cbd5e1' }}
+                          contentStyle={{ 
+                            borderRadius: '8px', 
+                            backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                            border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, 
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            color: isDark ? '#f8fafc' : '#0f172a'
+                          }}
                           formatter={(value: any, name: string) => {
                             if (typeof value === 'number') {
                               return [`${value.toFixed(2)} mg/mL`, name];

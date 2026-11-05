@@ -44,6 +44,21 @@ export const PhaseDiagramChart: React.FC<PhaseDiagramChartProps> = ({
   const [showLinearTrajectory, setShowLinearTrajectory] = useState<boolean>(true);
   const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
 
+  const [isDark, setIsDark] = useState(() => {
+    return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  });
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   // Calculate focused domain for Supersaturation Y-axis (e.g. 0.8 to ~1.5)
   const maxS = useMemo(() => {
     let max = mszwScrit;
@@ -334,23 +349,25 @@ export const PhaseDiagramChart: React.FC<PhaseDiagramChartProps> = ({
         <ResponsiveContainer width="100%" height="100%">
           {activeView === 'phase' ? (
             <ComposedChart data={mergedPhaseChartData} margin={{ top: 12, right: 25, left: 10, bottom: 25 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
               <XAxis
                 dataKey="x"
                 type="number"
                 domain={xDomain}
                 ticks={xTicks}
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
-                label={{ value: `${phaseData.xLabel} (${phaseData.xUnit})`, position: 'bottom', offset: 8, fontSize: 11, fill: '#64748b' }}
+                label={{ value: `${phaseData.xLabel} (${phaseData.xUnit})`, position: 'bottom', offset: 8, fontSize: 11, fill: isDark ? '#ffffff' : '#64748b' }}
               />
               <YAxis
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
                 domain={[0, maxY]}
-                label={{ value: 'Concentration (mg/mL)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 11, fill: '#64748b' }}
+                label={{ value: 'Concentration (mg/mL)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 11, fill: isDark ? '#ffffff' : '#64748b' }}
               />
               <RechartsTooltip content={<CustomPhaseTooltip />} />
               <Legend
@@ -459,26 +476,28 @@ export const PhaseDiagramChart: React.FC<PhaseDiagramChartProps> = ({
             </ComposedChart>
           ) : activeView === 'supersaturation' ? (
             <LineChart data={supersaturationData} margin={{ top: 12, right: 25, left: 10, bottom: 25 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
               <XAxis
                 dataKey="timePercent"
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
                 label={{
                   value: `Process Progress (%) • Recipe Cycle: 0 to ${totalCycleHours} h`,
                   position: 'bottom',
                   offset: 8,
                   fontSize: 11,
-                  fill: '#64748b'
+                  fill: isDark ? '#ffffff' : '#64748b'
                 }}
               />
               <YAxis
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
                 domain={[0.8, maxS]}
-                label={{ value: 'Supersaturation Ratio (S = C/C*)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 11, fill: '#64748b' }}
+                label={{ value: 'Supersaturation Ratio (S = C/C*)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 11, fill: isDark ? '#ffffff' : '#64748b' }}
               />
               <RechartsTooltip content={<CustomTrajectoryTooltip mode="supersaturation" />} />
               <Legend
@@ -555,26 +574,28 @@ export const PhaseDiagramChart: React.FC<PhaseDiagramChartProps> = ({
             </LineChart>
           ) : (
             <LineChart data={supersaturationData} margin={{ top: 12, right: 25, left: 24, bottom: 25 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
               <XAxis
                 dataKey="timePercent"
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
                 label={{
                   value: `Process Progress (%) • Recipe Cycle: 0 to ${totalCycleHours} h`,
                   position: 'bottom',
                   offset: 8,
                   fontSize: 11,
-                  fill: '#64748b'
+                  fill: isDark ? '#ffffff' : '#64748b'
                 }}
               />
               <YAxis
-                stroke="#64748b"
+                stroke={isDark ? '#94a3b8' : '#64748b'}
                 fontSize={11}
+                tick={{ fill: isDark ? '#ffffff' : '#64748b' }}
                 tickLine={false}
                 domain={[0, maxDeltaC]}
-                label={{ value: 'Driving Force ΔC (mg/mL)', angle: -90, position: 'insideLeft', offset: 14, fontSize: 11, fill: '#64748b' }}
+                label={{ value: 'Driving Force ΔC (mg/mL)', angle: -90, position: 'insideLeft', offset: 14, fontSize: 11, fill: isDark ? '#ffffff' : '#64748b' }}
               />
               <RechartsTooltip content={<CustomTrajectoryTooltip mode="driving_force" />} />
               <Legend
