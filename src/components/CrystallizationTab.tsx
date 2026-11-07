@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Beaker, Layers, FileText, Leaf } from 'lucide-react';
+import { Beaker, Layers, Leaf } from 'lucide-react';
 import { Experiment } from '../types';
 import {
   SeedingParams,
@@ -12,8 +12,7 @@ import {
   generateReactorSchedule,
   calculateAdvancedCakeWash,
   getSolventDensity,
-  calculateGreenMetrics,
-  generateSopDocument
+  calculateGreenMetrics
 } from '../utils/crystallization';
 import { ProcessParametersBar } from './crystallization/ProcessParametersBar';
 import { BatchSummaryCard } from './crystallization/BatchSummaryCard';
@@ -22,7 +21,6 @@ import { PhaseDiagramChart } from './crystallization/PhaseDiagramChart';
 import { ReactorScheduleCard } from './crystallization/ReactorScheduleCard';
 import { CakeWashFiltrationCard } from './crystallization/CakeWashFiltrationCard';
 import { GreenMetricsCard } from './crystallization/GreenMetricsCard';
-import { BatchSopModal } from './crystallization/BatchSopModal';
 
 export interface CrystallizationPlannerData {
   apiMassG: string;
@@ -111,7 +109,6 @@ interface CrystallizationTabProps {
 }
 
 export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeExperiment, predictionContext }) => {
-  const [isSopOpen, setIsSopOpen] = useState<boolean>(false);
 
   const experimentId = activeExperiment?.id || 'default';
   const savedSolv1 = activeExperiment ? localStorage.getItem(`hplc-pred-solv1-${activeExperiment.id}`) || undefined : undefined;
@@ -411,26 +408,6 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
       seedingResult
     );
 
-    // One-Click SOP Batch Record Document (Item 6)
-    const sopDocument = generateSopDocument(
-      task as 'temperature' | 'composition' | 'simultaneous',
-      activeExperiment?.name || 'API Candidate',
-      pApiMassG,
-      pInitVolMl,
-      pTStart,
-      pTFinal,
-      pFStart,
-      pFFinal,
-      totalAddedAntiSolvent,
-      solvent1Name,
-      solvent2Name,
-      seedingResult,
-      scheduleSummary,
-      washParams,
-      washResult,
-      greenMetrics
-    );
-
     return {
       cStart, cFinal,
       cBatchStart, isUndersaturated, dissolvedMgStart,
@@ -446,7 +423,6 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
       scheduleSummary,
       washResult,
       greenMetrics,
-      sopDocument,
       pApiMassG,
       pInitVolMl,
       pTStart,
@@ -492,7 +468,7 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             Crystallization & Yield Planner
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Integrated QbD suite for seeding kinetics, reactor schedules, cake washing, green PMI metrics, and batch SOPs.
+            Integrated QbD suite for seeding kinetics, reactor schedules, cake washing, and green PMI metrics.
           </p>
         </div>
 
@@ -502,16 +478,6 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
               <Leaf size={14} />
               <span>PMI: <strong>{calcResults.greenMetrics.pmi}</strong></span>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setIsSopOpen(true)}
-              className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
-              title="Generate batch crystallization standard operating procedure"
-            >
-              <FileText size={15} />
-              <span>Export Recipe SOP</span>
-            </button>
           </div>
         )}
       </div>
@@ -622,16 +588,6 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             Please enter positive values for API Mass (g) and Initial Volume (mL) in the parameters bar above to calculate crystallization yield, kinetics, and phase diagrams.
           </p>
         </div>
-      )}
-
-      {/* Feature 6: One-Click SOP Batch Crystallization Record Modal */}
-      {calcResults && (
-        <BatchSopModal
-          isOpen={isSopOpen}
-          onClose={() => setIsSopOpen(false)}
-          sop={calcResults.sopDocument}
-          scheduleSummary={calcResults.scheduleSummary}
-        />
       )}
     </div>
   );
