@@ -31,6 +31,21 @@ export function HansenSpaceModal({
   const [cameraView, setCameraView] = useState<'default' | 'top' | 'front' | 'side'>('default');
   const [searchSolventId, setSearchSolventId] = useState<string>('');
 
+  const [isDark, setIsDark] = useState(() => {
+    return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  });
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, [isOpen]);
+
   // Filter solvents that have valid Hansen parameters
   const validSolvents = useMemo(() => {
     return solvents.filter(
@@ -120,7 +135,8 @@ export function HansenSpaceModal({
           cmin: 2,
           cmax: 10,
           colorbar: {
-            title: { text: 'G (EHS)', font: { size: 13, family: 'sans-serif' } },
+            title: { text: 'G (EHS)', font: { size: 13, family: 'sans-serif', color: isDark ? '#ffffff' : '#1e293b' } },
+            tickfont: { size: 11, color: isDark ? '#f1f5f9' : '#334155' },
             tickvals: [3, 4, 5, 6, 7, 8, 9, 10],
             len: 0.75,
             thickness: 16,
@@ -151,7 +167,7 @@ export function HansenSpaceModal({
         z: topSolvents.map(s => s.hansenH!),
         text: topSolvents.map(s => s.name),
         textposition: 'top center',
-        textfont: { size: 10, color: '#1e293b' },
+        textfont: { size: 10, color: isDark ? '#93c5fd' : '#1e293b' },
         hoverinfo: 'text',
         hovertext: topSolvents.map(s => {
           const match = topCandidates.find(c => c.solvent.id === s.id);
@@ -184,7 +200,7 @@ export function HansenSpaceModal({
         z: topBinaries.map(b => b.hansenH),
         text: topBinaries.map(b => `${Math.round(b.fraction1 * 100)}:${Math.round(b.fraction2 * 100)} Blend`),
         textposition: 'bottom center',
-        textfont: { size: 9, color: '#7c3aed' },
+        textfont: { size: 9, color: isDark ? '#d8b4fe' : '#7c3aed' },
         hoverinfo: 'text',
         hovertext: topBinaries.map(b => 
           `<b>🧪 Binary Mixture: ${b.name}</b><br>` +
@@ -215,7 +231,7 @@ export function HansenSpaceModal({
         z: [refHH!],
         text: [`📍 ${referenceSolvent!.name}`],
         textposition: 'top center',
-        textfont: { size: 12, color: '#dc2626', family: 'sans-serif' },
+        textfont: { size: 12, color: isDark ? '#f87171' : '#dc2626', family: 'sans-serif' },
         hoverinfo: 'text',
         hovertext: [
           `<b>🎯 Reference Problem Solvent: ${referenceSolvent!.name}</b><br>` +
@@ -246,7 +262,7 @@ export function HansenSpaceModal({
         z: [highlightedSolvent.hansenH],
         text: [`🔍 ${highlightedSolvent.name}`],
         textposition: 'top center',
-        textfont: { size: 12, color: '#b45309', family: 'sans-serif' },
+        textfont: { size: 12, color: isDark ? '#fbbf24' : '#b45309', family: 'sans-serif' },
         hoverinfo: 'text',
         hovertext: [
           `<b>🔍 Inspected Solvent: ${highlightedSolvent.name}</b><br>` +
@@ -269,7 +285,7 @@ export function HansenSpaceModal({
     }
 
     return traces;
-  }, [isOpen, validSolvents, referenceSolvent, showAllSolvents, showBinaryMixtures, topCandidates, topCandidateIds, binaryMixtures, highlightedSolvent]);
+  }, [isOpen, validSolvents, referenceSolvent, showAllSolvents, showBinaryMixtures, topCandidates, topCandidateIds, binaryMixtures, highlightedSolvent, isDark]);
 
   // Plotly 3D Layout
   const plotLayout = useMemo(() => {
@@ -283,7 +299,11 @@ export function HansenSpaceModal({
       eye = { x: 2.5, y: 0.0, z: 0.0 };
     }
 
-    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+    const axisTextColor = isDark ? '#ffffff' : '#1e293b';
+    const axisTickColor = isDark ? '#f1f5f9' : '#334155';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.22)' : '#e2e8f0';
+    const zeroColor = isDark ? 'rgba(255, 255, 255, 0.45)' : '#cbd5e1';
+    const cubeBgColor = isDark ? '#1e293b' : '#f8fafc';
 
     return {
       autosize: true,
@@ -294,47 +314,47 @@ export function HansenSpaceModal({
       legend: {
         x: 0.02,
         y: 0.98,
-        bgcolor: isDark ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255,255,255,0.85)',
-        bordercolor: isDark ? '#334155' : '#e2e8f0',
+        bgcolor: isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.92)',
+        bordercolor: isDark ? '#475569' : '#cbd5e1',
         borderwidth: 1,
-        font: { size: 11, color: isDark ? '#e2e8f0' : '#334155' }
+        font: { size: 11, color: isDark ? '#ffffff' : '#1e293b' }
       },
       scene: {
         aspectmode: 'cube',
         camera: { eye },
         xaxis: {
-          title: { text: 'Dispersion dD (MPa)¹/²', font: { size: 12, color: isDark ? '#ffffff' : '#334155' } },
-          tickfont: { size: 10, color: isDark ? '#ffffff' : '#334155' },
-          color: isDark ? '#ffffff' : '#334155',
-          backgroundcolor: isDark ? '#1e293b' : '#f8fafc',
-          gridcolor: isDark ? '#334155' : '#e2e8f0',
+          title: { text: 'Dispersion δD (MPa)¹/²', font: { size: 12, color: axisTextColor } },
+          tickfont: { size: 10, color: axisTickColor },
+          color: axisTextColor,
+          backgroundcolor: cubeBgColor,
+          gridcolor: gridColor,
           showbackground: true,
-          zerolinecolor: isDark ? '#475569' : '#cbd5e1',
+          zerolinecolor: zeroColor,
           range: [12, 22]
         },
         yaxis: {
-          title: { text: 'Polarity dP (MPa)¹/²', font: { size: 12, color: isDark ? '#ffffff' : '#334155' } },
-          tickfont: { size: 10, color: isDark ? '#ffffff' : '#334155' },
-          color: isDark ? '#ffffff' : '#334155',
-          backgroundcolor: isDark ? '#1e293b' : '#f8fafc',
-          gridcolor: isDark ? '#334155' : '#e2e8f0',
+          title: { text: 'Polarity δP (MPa)¹/²', font: { size: 12, color: axisTextColor } },
+          tickfont: { size: 10, color: axisTickColor },
+          color: axisTextColor,
+          backgroundcolor: cubeBgColor,
+          gridcolor: gridColor,
           showbackground: true,
-          zerolinecolor: isDark ? '#475569' : '#cbd5e1',
+          zerolinecolor: zeroColor,
           range: [0, 26]
         },
         zaxis: {
-          title: { text: 'Hydrogen bonding dH (MPa)¹/²', font: { size: 12, color: isDark ? '#ffffff' : '#334155' } },
-          tickfont: { size: 10, color: isDark ? '#ffffff' : '#334155' },
-          color: isDark ? '#ffffff' : '#334155',
-          backgroundcolor: isDark ? '#1e293b' : '#f8fafc',
-          gridcolor: isDark ? '#334155' : '#e2e8f0',
+          title: { text: 'Hydrogen bonding δH (MPa)¹/²', font: { size: 12, color: axisTextColor } },
+          tickfont: { size: 10, color: axisTickColor },
+          color: axisTextColor,
+          backgroundcolor: cubeBgColor,
+          gridcolor: gridColor,
           showbackground: true,
-          zerolinecolor: isDark ? '#475569' : '#cbd5e1',
+          zerolinecolor: zeroColor,
           range: [0, 44]
         }
       }
     };
-  }, [cameraView]);
+  }, [cameraView, isDark]);
 
   if (!isOpen) return null;
 
@@ -526,6 +546,7 @@ export function HansenSpaceModal({
         {/* 3D Canvas Area */}
         <div className="relative flex-1 min-h-[500px] h-[60vh] bg-slate-50/50 dark:bg-slate-900">
           <Plot
+            key={`hansen-space-3d-${isDark ? 'dark' : 'light'}`}
             data={plotData}
             layout={plotLayout}
             config={{

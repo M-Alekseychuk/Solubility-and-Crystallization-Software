@@ -3,9 +3,8 @@ import { Download, Upload, FileJson, FileSpreadsheet, ChevronDown } from 'lucide
 import { CalibrationPoint, SampleData, CalibrationResult } from '../types';
 import { roundTo, getExportFileName } from '../utils';
 import { exportProjectToExcel } from '../utils/excelExport';
-import { exportToPDF } from '../utils/pdfExport';
 import { exportToInteractiveHTML } from '../utils/htmlExport';
-import { FileText, FileCode } from 'lucide-react';
+import { FileCode } from 'lucide-react';
 
 interface DataActionsProps {
   calibrationPoints: CalibrationPoint[];
@@ -48,23 +47,6 @@ export function DataActions({ calibrationPoints, setCalibrationPoints, samples, 
     }
   };
 
-  const handleExportPDFAction = async () => {
-    try {
-      await exportToPDF({
-        experimentName: experimentName || 'Untitled',
-        calibrationData: calibrationPoints,
-        calibrationResult,
-        samples,
-        wavelength: wavelength || '',
-        hplcUsed: hplcUsed || ''
-      });
-    } catch (err) {
-      console.error('Error exporting PDF:', err);
-    } finally {
-      setExportOpen(false);
-    }
-  };
-
   const handleExportHTMLAction = async () => {
     try {
       await exportToInteractiveHTML({
@@ -99,9 +81,6 @@ export function DataActions({ calibrationPoints, setCalibrationPoints, samples, 
 
         {exportOpen && (
           <div className="absolute right-0 mt-1 w-56 bg-white border border-slate-200 shadow-lg rounded-md py-1 z-20">
-            <button onClick={handleExportPDFAction} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left">
-              <FileText size={16} className="text-red-500" /> PDF Document (.pdf)
-            </button>
             <button onClick={handleExportHTMLAction} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left">
               <FileCode size={16} className="text-purple-500" /> Interactive HTML (.html)
             </button>

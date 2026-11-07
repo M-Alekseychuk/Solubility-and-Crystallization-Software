@@ -272,31 +272,32 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
   const calcResults = useMemo(() => {
     if (!isModelAvailable) return null;
 
-    const parseNum = (val: string, fallback: number) => {
-      if (val === '') return fallback;
-      const n = parseFloat(val);
-      return isNaN(n) ? fallback : n;
-    };
+    try {
+      const parseNum = (val: string, fallback: number) => {
+        if (val === '') return fallback;
+        const n = parseFloat(val);
+        return isNaN(n) ? fallback : n;
+      };
 
-    const pApiMassG = parseNum(apiMassG, 10);
-    const pInitVolMl = parseNum(initVolMl, 100);
-    const pTStart = parseNum(tStart, 60);
-    const pTFinal = parseNum(tFinal, 20);
-    const pFStart = parseNum(fStart, 100);
-    const pFFinal = parseNum(fFinal, 50);
+      const pApiMassG = parseNum(apiMassG, 10);
+      const pInitVolMl = parseNum(initVolMl, 100);
+      const pTStart = parseNum(tStart, 60);
+      const pTFinal = parseNum(tFinal, 20);
+      const pFStart = parseNum(fStart, 100);
+      const pFFinal = parseNum(fFinal, 50);
 
-    if (pApiMassG <= 0 || pInitVolMl <= 0) return null;
+      if (pApiMassG <= 0 || pInitVolMl <= 0) return null;
 
-    const cStart = getSolubility(pTStart, pFStart);
-    const cFinal = getSolubility(pTFinal, pFFinal);
+      const cStart = getSolubility(pTStart, pFStart);
+      const cFinal = getSolubility(pTFinal, pFFinal);
 
-    const apiMassMg = pApiMassG * 1000;
-    const cBatchStart = apiMassMg / pInitVolMl;
-    
-    // Anti-solvent math
-    const vPrimary = pInitVolMl * (pFStart / 100);
-    const finalVolMl = task === 'temperature' ? pInitVolMl : (pFFinal > 0 ? vPrimary / (pFFinal / 100) : pInitVolMl);
-    const totalAddedAntiSolvent = finalVolMl - pInitVolMl;
+      const apiMassMg = pApiMassG * 1000;
+      const cBatchStart = apiMassMg / pInitVolMl;
+      
+      // Anti-solvent math
+      const vPrimary = pInitVolMl * (pFStart / 100);
+      const finalVolMl = task === 'temperature' ? pInitVolMl : (pFFinal > 0 ? vPrimary / (pFFinal / 100) : pInitVolMl);
+      const totalAddedAntiSolvent = Math.max(0, finalVolMl - pInitVolMl);
 
     const isUndersaturated = cBatchStart < cStart;
     const dissolvedMgStart = Math.min(apiMassMg, cStart * pInitVolMl);
@@ -369,7 +370,15 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
       seedingResult.seedingT,
       seedingResult.seedingAntiSolventVol,
       seedingResult.saturationT,
-      cFinal
+      cFinal,
+      seedingParams.targetS,
+      pInitVolMl,
+      totalAddedAntiSolvent,
+      vPrimary,
+      pApiMassG,
+      seedingResult.saturationAntiSolventVol,
+      seedingResult.seedingSolvent1Fraction,
+      seedingResult.saturationSolvent1Fraction
     );
 
     // Time-Resolved Reactor Schedule (Item 3)
@@ -445,7 +454,21 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
       pFStart,
       pFFinal
     };
-  }, [isModelAvailable, tStart, tFinal, fStart, fFinal, apiMassG, initVolMl, task, model, seedingParams, scheduleParams, washParams, activeExperiment, solvent1Name, solvent2Name]);
+  } catch (e) {
+    console.error('Error computing crystallization results:', e);
+    return null;
+  }
+}, [isModelAvailable, tStart, tFinal, fStart, fFinal, apiMassG, initVolMl, task, model, seedingParams, scheduleParams, washParams, activeExperiment, solvent1Name, solvent2Name]);
+
+  // Fallback preview for anti-solvent volume if calcResults is temporarily null while editing
+  const previewAddedAntiSolvent = useMemo(() => {
+    const numInitVol = parseFloat(initVolMl) || 100;
+    const numFStart = parseFloat(fStart) || 100;
+    const numFFinal = parseFloat(fFinal) || 50;
+    const previewVPrimary = numInitVol * (numFStart / 100);
+    const previewFinalVol = task === 'temperature' ? numInitVol : (numFFinal > 0 ? previewVPrimary / (numFFinal / 100) : numInitVol);
+    return Math.max(0, previewFinalVol - numInitVol);
+  }, [initVolMl, fStart, fFinal, task]);
 
   if (!isModelAvailable) {
     return (
@@ -493,7 +516,29 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
         )}
       </div>
 
-      {calcResults && (
+      {/* Process Parameters & Operating Conditions Bar (Always visible) */}
+      <ProcessParametersBar
+        task={task as 'temperature' | 'composition' | 'simultaneous'}
+        apiMassG={apiMassG}
+        setApiMassG={setApiMassG}
+        initVolMl={initVolMl}
+        setInitVolMl={setInitVolMl}
+        tStart={tStart}
+        setTStart={setTStart}
+        tFinal={tFinal}
+        setTFinal={setTFinal}
+        fStart={fStart}
+        setFStart={setFStart}
+        fFinal={fFinal}
+        setFFinal={setFFinal}
+        handleNumericInput={handleNumericInput}
+        solvent1Name={solvent1Name}
+        solvent2Name={solvent2Name}
+        model={model}
+        totalAddedAntiSolvent={calcResults?.totalAddedAntiSolvent ?? previewAddedAntiSolvent}
+      />
+
+      {calcResults ? (
         <div className="space-y-6">
           {/* 1. Executive Batch Yield & Mass Balance Hub (Top Overview) */}
           <BatchSummaryCard
@@ -512,29 +557,7 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             totalLossPct={calcResults.totalLossPct}
           />
 
-          {/* 2. Process Parameters & Operating Conditions */}
-          <ProcessParametersBar
-            task={task as 'temperature' | 'composition' | 'simultaneous'}
-            apiMassG={apiMassG}
-            setApiMassG={setApiMassG}
-            initVolMl={initVolMl}
-            setInitVolMl={setInitVolMl}
-            tStart={tStart}
-            setTStart={setTStart}
-            tFinal={tFinal}
-            setTFinal={setTFinal}
-            fStart={fStart}
-            setFStart={setFStart}
-            fFinal={fFinal}
-            setFFinal={setFFinal}
-            handleNumericInput={handleNumericInput}
-            solvent1Name={solvent1Name}
-            solvent2Name={solvent2Name}
-            model={model}
-            totalAddedAntiSolvent={calcResults.totalAddedAntiSolvent}
-          />
-
-          {/* 3. Phase Diagram Overlay & Operating Trajectory */}
+          {/* 2. Phase Diagram Overlay & Operating Trajectory */}
           <PhaseDiagramChart
             phaseData={calcResults.phaseData}
             supersaturationData={calcResults.trajectoryData}
@@ -544,7 +567,7 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             totalCycleHours={scheduleParams.totalCycleHours}
           />
 
-          {/* 4. Seeding Strategy & Metastable Window Calculator */}
+          {/* 3. Seeding Strategy & Metastable Window Calculator */}
           <SeedingCard
             seedingParams={seedingParams}
             setSeedingParams={setSeedingParams}
@@ -560,7 +583,7 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             initVolMl={calcResults.pInitVolMl}
           />
 
-          {/* 5. Reactor Dosing & Controlled Cooling Schedules */}
+          {/* 4. Reactor Dosing & Controlled Cooling Schedules */}
           <ReactorScheduleCard
             scheduleParams={scheduleParams}
             setScheduleParams={setScheduleParams}
@@ -570,7 +593,7 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             solvent2Name={solvent2Name}
           />
 
-          {/* 6. Advanced Cake Wash & Filtration Holdup Modeling */}
+          {/* 5. Advanced Cake Wash & Filtration Holdup Modeling */}
           <CakeWashFiltrationCard
             washParams={washParams}
             setWashParams={setWashParams}
@@ -581,13 +604,23 @@ export const CrystallizationTab: React.FC<CrystallizationTabProps> = ({ activeEx
             task={task as 'temperature' | 'composition' | 'simultaneous'}
           />
 
-          {/* 7. Process Mass Intensity (PMI) & Green Chemistry Metrics */}
+          {/* 6. Process Mass Intensity (PMI) & Green Chemistry Metrics */}
           <GreenMetricsCard
             metrics={calcResults.greenMetrics}
             solvent1Name={solvent1Name}
             solvent2Name={solvent2Name}
             apiMassG={calcResults.pApiMassG}
           />
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400">
+          <Beaker size={36} className="mx-auto mb-3 text-blue-500 opacity-80" />
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-1">
+            Specify Valid Process Inputs
+          </h3>
+          <p className="max-w-md mx-auto text-xs text-slate-500 dark:text-slate-400">
+            Please enter positive values for API Mass (g) and Initial Volume (mL) in the parameters bar above to calculate crystallization yield, kinetics, and phase diagrams.
+          </p>
         </div>
       )}
 

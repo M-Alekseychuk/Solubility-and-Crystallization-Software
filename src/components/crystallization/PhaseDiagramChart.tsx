@@ -97,9 +97,13 @@ export const PhaseDiagramChart: React.FC<PhaseDiagramChartProps> = ({
 
   // Clean, round numeric X-axis domain and ticks for Phase Diagram
   const { xDomain, xTicks } = useMemo(() => {
-    if (!mergedPhaseChartData.length) return { xDomain: [0, 80], xTicks: [0, 20, 40, 60, 80] };
-    const minVal = Math.min(...mergedPhaseChartData.map(d => d.x));
-    const maxVal = Math.max(...mergedPhaseChartData.map(d => d.x));
+    const validPoints = mergedPhaseChartData.filter(d => typeof d.x === 'number' && !isNaN(d.x));
+    if (!validPoints.length) return { xDomain: [0, 80], xTicks: [0, 20, 40, 60, 80] };
+    const minVal = Math.min(...validPoints.map(d => d.x));
+    const maxVal = Math.max(...validPoints.map(d => d.x));
+    if (!isFinite(minVal) || !isFinite(maxVal) || minVal >= maxVal) {
+      return { xDomain: [0, 80], xTicks: [0, 20, 40, 60, 80] };
+    }
     
     // Determine clean step size (e.g., 10°C, 20%, etc.)
     const range = maxVal - minVal;
@@ -111,8 +115,8 @@ export const PhaseDiagramChart: React.FC<PhaseDiagramChartProps> = ({
     const start = Math.floor(minVal / step) * step;
     const end = Math.ceil(maxVal / step) * step;
     const ticks: number[] = [];
-    for (let t = start; t <= end; t += step) {
-      ticks.push(t);
+    for (let t = start; t <= end + 0.001; t += step) {
+      ticks.push(Math.round(t * 10) / 10);
     }
     return { xDomain: [start, end], xTicks: ticks };
   }, [mergedPhaseChartData]);

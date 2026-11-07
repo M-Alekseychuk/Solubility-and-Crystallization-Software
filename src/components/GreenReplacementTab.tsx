@@ -3,8 +3,6 @@ import { Leaf, Search, ArrowRight, Activity, Filter, Download, Droplet, Compass,
 import { Solvent, Experiment, SampleData } from '../types';
 import { getSolventNames, defaultSolvents, extendedSolvents } from '../data/solvents';
 import * as XLSX from 'xlsx-js-style';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
 import { HansenSpaceModal } from './HansenSpaceModal';
 import { EhsRadarModal } from './EhsRadarModal';
 import { calculateBinaryMixtures, BinaryMixtureCandidate, getEhsBreakdown } from '../utils/greenChemistry';
@@ -243,58 +241,6 @@ export function GreenReplacementTab({ activeExperiment }: GreenReplacementTabPro
     }
 
     XLSX.writeFile(wb, `${expName}_Green_Replacements.xlsx`);
-
-    // PDF Export
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(`Green Chemistry Replacement Report: ${referenceSolvent?.name}`, 14, 20);
-    doc.setFontSize(10);
-    doc.text(`Target Boiling Point: ${referenceSolvent?.boilingPoint}°C | Target Polarity: ${referenceSolvent?.polarityIndex} | Hansen: dD=${referenceSolvent?.hansenD ?? '-'}, dP=${referenceSolvent?.hansenP ?? '-'}, dH=${referenceSolvent?.hansenH ?? '-'}`, 14, 28);
-    
-    const tableData = filteredCandidates.slice(0, 15).map(c => [
-      c.solvent.name,
-      `${c.similarity.toFixed(1)}%`,
-      c.solvent.ichClass ? `Class ${c.solvent.ichClass}` : '-',
-      c.solvent.ehsScore ? `${c.solvent.ehsScore}/10` : '-',
-      c.solvent.costPerKg ? `$${Number(c.solvent.costPerKg).toFixed(2)}` : '-',
-      `${c.solvent.boilingPoint}°C`,
-      c.solvent.polarityIndex ?? '-',
-      c.expSolubility !== null ? c.expSolubility.toFixed(2) : 'N/A'
-    ]);
-
-    (doc as any).autoTable({
-      startY: 35,
-      head: [['Candidate', 'Similarity', 'ICH', 'EHS', 'Cost ($/kg)', 'BP (°C)', 'Polarity', 'Measured Sol.']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { fillColor: [34, 197, 94] }
-    });
-
-    // Add binary mixtures table to PDF if available
-    if (binaryMixtures.length > 0) {
-      const finalY = (doc as any).lastAutoTable?.finalY || 150;
-      doc.setFontSize(13);
-      doc.text('Recommended Synergistic Binary Solvent Mixtures', 14, finalY + 14);
-
-      const binTableData = binaryMixtures.slice(0, 5).map(b => [
-        b.name,
-        `${b.similarity.toFixed(1)}%`,
-        `${b.ehsScore}/10`,
-        b.costPerKg ? `$${b.costPerKg.toFixed(2)}` : '-',
-        `${b.boilingPoint}°C`,
-        `${b.hansenD} / ${b.hansenP} / ${b.hansenH}`
-      ]);
-
-      (doc as any).autoTable({
-        startY: finalY + 18,
-        head: [['Binary Blend', 'Similarity', 'Blended EHS', 'Est. Cost', 'Blended BP', 'Hansen (dD/dP/dH)']],
-        body: binTableData,
-        theme: 'grid',
-        headStyles: { fillColor: [147, 51, 234] }
-      });
-    }
-
-    doc.save(`${expName}_Green_Replacements.pdf`);
   };
 
   const handleOpenEhsForCandidate = (cand: typeof filteredCandidates[0]) => {

@@ -6,26 +6,39 @@ import XLSX from 'xlsx-js-style';
 const { utils, writeFile } = XLSX;
 import { defaultSolvents, masterSolventDatabase, enrichSolventWithReference, enrichSolventsList, findSolventInDatabase } from '../data/solvents';
 
+const SOLVENTS_DEFAULT_VERSION = 'v3_55_inventory_attached';
+
 export function SolventsTab() {
   const [solvents, setSolvents] = useState<Solvent[]>(() => {
+    const version = localStorage.getItem('hplc-solvents-version');
+    // If version doesn't match, purge any old/generic lists and initialize with the software default
+    if (version !== SOLVENTS_DEFAULT_VERSION) {
+      localStorage.removeItem('hplc-solvents');
+      localStorage.removeItem('hplc-solvents-standard');
+      localStorage.setItem('hplc-solvents-version', SOLVENTS_DEFAULT_VERSION);
+      localStorage.setItem('hplc-solvents', JSON.stringify(defaultSolvents));
+      return defaultSolvents;
+    }
+
     const saved = localStorage.getItem('hplc-solvents');
     const standard = localStorage.getItem('hplc-solvents-standard');
     const target = saved || standard;
     if (target) {
       try {
         let parsed = JSON.parse(target);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Enrich user lab solvents with reference database
-          const { enriched } = enrichSolventsList(parsed);
-          localStorage.setItem('hplc-solvents', JSON.stringify(enriched));
-          return enriched;
+        // Only accept saved inventory if it's not the old generic 18-solvent list
+        if (Array.isArray(parsed) && parsed.length >= 50) {
+          return parsed;
         }
       } catch (e) {
         console.error("Failed to parse saved solvents", e);
       }
     }
-    const { enriched } = enrichSolventsList(defaultSolvents);
-    return enriched;
+    localStorage.removeItem('hplc-solvents');
+    localStorage.removeItem('hplc-solvents-standard');
+    localStorage.setItem('hplc-solvents-version', SOLVENTS_DEFAULT_VERSION);
+    localStorage.setItem('hplc-solvents', JSON.stringify(defaultSolvents));
+    return defaultSolvents;
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -38,6 +51,7 @@ export function SolventsTab() {
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('hplc-solvents', JSON.stringify(solvents));
+    localStorage.setItem('hplc-solvents-version', SOLVENTS_DEFAULT_VERSION);
   }, [solvents]);
 
   // On mount check: silently synchronize any missing parameters with reference database without banner
@@ -52,28 +66,19 @@ export function SolventsTab() {
   const handleSaveAsStandard = () => {
     localStorage.setItem('hplc-solvents-standard', JSON.stringify(solvents));
     localStorage.setItem('hplc-solvents', JSON.stringify(solvents));
+    localStorage.setItem('hplc-solvents-version', SOLVENTS_DEFAULT_VERSION);
     setFeedbackMessage('Current solvent list saved as software standard');
     setTimeout(() => setFeedbackMessage(null), 3500);
   };
 
   const handleResetToStandard = () => {
-    if (window.confirm('Reset lab solvents inventory to the software standard? Any unsaved changes will be replaced.')) {
-      const standard = localStorage.getItem('hplc-solvents-standard');
-      let targetSolvents = defaultSolvents;
-      if (standard) {
-        try {
-          const parsed = JSON.parse(standard);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            targetSolvents = parsed;
-          }
-        } catch (e) {
-          console.error("Failed to parse standard solvents", e);
-        }
-      }
-      const { enriched } = enrichSolventsList(targetSolvents);
-      setSolvents(enriched);
-      localStorage.setItem('hplc-solvents', JSON.stringify(enriched));
-      setFeedbackMessage('Solvent inventory reset to software standard');
+    if (window.confirm('Reset lab solvents inventory to the software default (55 curated solvents)? Any unsaved modifications will be replaced.')) {
+      localStorage.removeItem('hplc-solvents');
+      localStorage.removeItem('hplc-solvents-standard');
+      localStorage.setItem('hplc-solvents-version', SOLVENTS_DEFAULT_VERSION);
+      setSolvents(defaultSolvents);
+      localStorage.setItem('hplc-solvents', JSON.stringify(defaultSolvents));
+      setFeedbackMessage('Solvent inventory reset to software default (55 solvents)');
       setTimeout(() => setFeedbackMessage(null), 3500);
     }
   };

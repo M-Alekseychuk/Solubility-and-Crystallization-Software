@@ -1,7 +1,7 @@
 import { CalibrationPoint, SampleData, CalibrationResult } from '../types';
 import { getExportFileName } from '../utils';
 import { enrichSamplesWithConcentration } from './calculations';
-import { fitTemperatureModels, DataPoint } from './models';
+import { fitTemperatureModels, fitSimultaneousModels, DataPoint } from './models';
 import logoImg from '../assets/Logo.png';
 
 interface ExportHTMLParams {
@@ -36,19 +36,30 @@ export const exportToInteractiveHTML = async ({
     let logoBase64 = '';
     try {
         const customLogo = typeof window !== 'undefined' ? localStorage.getItem('hplc-custom-logo') : null;
-        const img = new Image();
-        img.src = customLogo || logoImg;
-        await new Promise((resolve) => {
-            img.onload = resolve;
-            img.onerror = resolve; 
-        });
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-            ctx.drawImage(img, 0, 0);
-            logoBase64 = canvas.toDataURL('image/png');
+        if (customLogo && customLogo.startsWith('data:image')) {
+            logoBase64 = customLogo;
+        } else {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = customLogo || logoImg;
+            await new Promise((resolve) => {
+                if (img.complete) {
+                    resolve(null);
+                } else {
+                    img.onload = () => resolve(null);
+                    img.onerror = () => resolve(null);
+                }
+            });
+            if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    logoBase64 = canvas.toDataURL('image/png');
+                }
+            }
         }
     } catch (err) {
         console.error('Failed to load logo for HTML export', err);
@@ -231,62 +242,199 @@ export const exportToInteractiveHTML = async ({
             }
         }
 
-        // Include 3D Simultaneous model if active in software
-        if (activePredictionModel && activePredictionModel.predictionTask === 'simultaneous' && activePredictionModel.surfaceData && activePredictionModel.scatter3DData) {
-            const s1 = activePredictionModel.selectedSolvent1 || 'Solvent 1';
-            const s2 = activePredictionModel.selectedSolvent2 || 'Solvent 2';
-            const simKey = `${s1} + ${s2} (3D Surface)`;
+        // Process 3D Simultaneous Models for any binary mixtures present in dataset
+        // Collect candidate binary solvent pairs
+        const mixturePairs: Array<{ s1: string; s2: string }> = [];
+        const seenPairs = new Set<string>();
 
-            const simTraces = [
-                {
-                    type: 'surface',
-                    z: activePredictionModel.surfaceData.zData,
-                    x: activePredictionModel.surfaceData.fValues,
-                    y: activePredictionModel.surfaceData.tValues,
-                    colorscale: 'Viridis',
-                    opacity: 0.8,
-                    name: 'Predicted Model',
-                    showscale: false
-                },
-                {
-                    type: 'scatter3d',
-                    mode: 'markers',
-                    x: activePredictionModel.scatter3DData.map((d: any) => d.f),
-                    y: activePredictionModel.scatter3DData.map((d: any) => d.t),
-                    z: activePredictionModel.scatter3DData.map((d: any) => d.s),
-                    marker: { size: 5, color: '#0f172a', symbol: 'circle' },
-                    name: 'Experimental Data'
+        // 1. If activePredictionModel specifies a pair, prioritize it
+        if (
+            activePredictionModel &&
+            activePredictionModel.selectedSolvent1 &&
+            activePredictionModel.selectedSolvent2 &&
+            activePredictionModel.selectedSolvent1.trim().toLowerCase() !== activePredictionModel.selectedSolvent2.trim().toLowerCase()
+        ) {
+            const s1 = activePredictionModel.selectedSolvent1.trim();
+            const s2 = activePredictionModel.selectedSolvent2.trim();
+            const pairId = [s1.toLowerCase(), s2.toLowerCase()].sort().join(':::');
+            seenPairs.add(pairId);
+            mixturePairs.push({ s1, s2 });
+        }
+
+        // 2. Discover binary mixture pairs directly from sample dataset
+        samples.forEach(s => {
+            const s1 = (s.solvent1 || '').trim();
+            const s2 = (s.solvent2 || '').trim();
+            if (s1 && s2 && s1.toLowerCase() !== s2.toLowerCase()) {
+                const pairId = [s1.toLowerCase(), s2.toLowerCase()].sort().join(':::');
+                if (!seenPairs.has(pairId)) {
+                    seenPairs.add(pairId);
+                    mixturePairs.push({ s1, s2 });
                 }
-            ]; // Target prediction red diamond hidden as requested by user
+            }
+        });
 
-            const simLayout = {
-                autosize: true,
-                showlegend: false,
-                margin: { l: 0, r: 0, b: 0, t: 0 },
-                scene: { 
-                    xaxis: { title: { text: `${s1} (%)`, font: { size: 16 } }, tickfont: { size: 13 } }, 
-                    yaxis: { title: { text: 'Temp (°C)', font: { size: 16 } }, tickfont: { size: 13 } }, 
-                    zaxis: { title: { text: 'Solubility (mg/mL)', font: { size: 16 } }, tickfont: { size: 13 } } 
-                },
-                paper_bgcolor: 'transparent',
-                plot_bgcolor: 'transparent'
-            };
+        // 3. Fit and generate 3D surface model for each qualifying binary pair
+        for (const { s1, s2 } of mixturePairs) {
+            const selS1 = s1.toLowerCase();
+            const selS2 = s2.toLowerCase();
 
-            allSolventsData[simKey] = {
-                key: simKey,
-                displayName: `${s1} + ${s2} (3D Surface)`,
-                is3D: true,
-                selectedModel: {
-                    modelName: activePredictionModel.model?.modelName || 'Simultaneous Model',
-                    stats: activePredictionModel.model?.stats || { r2: 0, adj_r2: 0, rmse: 0, mape: 0, aic: 0 }
-                },
-                candidateModels: (activePredictionModel.models || []).map((m: any) => {
-                    let chartData = null;
-                    if (typeof m.predict === 'function') {
-                        const tVals = activePredictionModel.surfaceData?.tValues;
-                        const fVals = activePredictionModel.surfaceData?.fValues;
-                        if (tVals && fVals) {
-                            const zData = tVals.map((t: number) => 
+            const matchingMixtureSamples = processedSamples.filter(s => {
+                if (s.excluded) return false;
+                if (s.calculatedReactionConc === null || isNaN(s.calculatedReactionConc)) return false;
+                const smpS1 = (s.solvent1 || '').trim().toLowerCase();
+                const smpS2 = (s.solvent2 || '').trim().toLowerCase();
+                const rawFrac = parseNum(s.solvent1Fraction);
+
+                // Mixture of both
+                if ((smpS1 === selS1 && smpS2 === selS2) || (smpS1 === selS2 && smpS2 === selS1)) return true;
+
+                // Pure Solvent 1
+                if (smpS1 === selS1 && (smpS2 === '' || smpS2 === selS1 || rawFrac === 100)) return true;
+                if (smpS2 === selS1 && (smpS1 === '' || rawFrac === 0)) return true;
+
+                // Pure Solvent 2
+                if (smpS1 === selS2 && (smpS2 === '' || smpS2 === selS2 || rawFrac === 100)) return true;
+                if (smpS2 === selS2 && (smpS1 === '' || rawFrac === 0)) return true;
+
+                return false;
+            });
+
+            const pairDataPoints: DataPoint[] = matchingMixtureSamples.map(s => {
+                const smpS1 = (s.solvent1 || '').trim().toLowerCase();
+                const smpS2 = (s.solvent2 || '').trim().toLowerCase();
+                const rawFrac = parseNum(s.solvent1Fraction);
+
+                let f = 1;
+                if (!isNaN(rawFrac)) {
+                    if (smpS1 === selS1) {
+                        f = rawFrac / 100;
+                    } else if (smpS2 === selS1) {
+                        f = (100 - rawFrac) / 100;
+                    } else if (smpS1 === selS2) {
+                        f = (100 - rawFrac) / 100;
+                    } else {
+                        f = rawFrac / 100;
+                    }
+                } else {
+                    if (smpS1 === selS1 && (smpS2 === '' || smpS2 === selS1)) f = 1;
+                    else if (smpS1 === selS2 && (smpS2 === '' || smpS2 === selS2)) f = 0;
+                    else if (smpS2 === selS1) f = 1;
+                    else if (smpS2 === selS2) f = 0;
+                }
+
+                return {
+                    T: parseNum(s.temperature),
+                    f: Math.max(0, Math.min(1, f)),
+                    S: Math.max(0, Number(s.calculatedReactionConc))
+                };
+            }).filter(d => !isNaN(d.T) && !isNaN(d.f) && !isNaN(d.S) && d.S > 0);
+
+            const uniqueT = Array.from(new Set(pairDataPoints.map(d => d.T))).sort((a, b) => a - b);
+            const uniqueF = Array.from(new Set(pairDataPoints.map(d => Math.round(d.f * 1000) / 1000))).sort((a, b) => a - b);
+
+            // Require both varying temperature and composition to generate simultaneous 3D surface
+            if (uniqueT.length >= 2 && uniqueF.length >= 2) {
+                const isActiveMatch = activePredictionModel &&
+                    activePredictionModel.predictionTask === 'simultaneous' &&
+                    activePredictionModel.selectedSolvent1 &&
+                    activePredictionModel.selectedSolvent2 &&
+                    ((activePredictionModel.selectedSolvent1.trim().toLowerCase() === selS1 && activePredictionModel.selectedSolvent2.trim().toLowerCase() === selS2) ||
+                     (activePredictionModel.selectedSolvent1.trim().toLowerCase() === selS2 && activePredictionModel.selectedSolvent2.trim().toLowerCase() === selS1));
+
+                const models = (isActiveMatch && activePredictionModel.models && activePredictionModel.models.length > 0)
+                    ? activePredictionModel.models
+                    : fitSimultaneousModels(pairDataPoints);
+
+                if (models && models.length > 0) {
+                    let selectedModel = models[0];
+                    if (isActiveMatch && activePredictionModel.model) {
+                        const match = models.find((m: any) => m.modelName === activePredictionModel.model.modelName);
+                        if (match) selectedModel = match;
+                    }
+
+                    const minT = Math.min(...uniqueT);
+                    const maxT = Math.max(...uniqueT);
+                    const startT = Math.max(-20, Math.floor(minT - 5));
+                    let upperT = maxT + 5;
+                    if (isActiveMatch && activePredictionModel.targetT) {
+                        const tNum = parseNum(activePredictionModel.targetT);
+                        if (!isNaN(tNum) && tNum > upperT) upperT = tNum + 5;
+                    }
+                    const endT = Math.ceil(upperT);
+
+                    let surfaceData = (isActiveMatch && activePredictionModel.surfaceData) ? activePredictionModel.surfaceData : null;
+                    if (!surfaceData) {
+                        const tValues: number[] = [];
+                        const tStep = Math.max(0.5, (endT - startT) / 20);
+                        for (let t = startT; t <= endT + 0.001; t += tStep) {
+                            tValues.push(Math.round(t * 10) / 10);
+                        }
+                        const fValues: number[] = [];
+                        for (let f = 0; f <= 1.001; f += 0.05) {
+                            fValues.push(Math.round(f * 100));
+                        }
+                        const zData = tValues.map(t =>
+                            fValues.map(f => {
+                                const pred = selectedModel.predict({ T: t, f: f / 100 });
+                                return Math.max(0, pred.pred);
+                            })
+                        );
+                        surfaceData = { tValues, fValues, zData };
+                    }
+
+                    const scatter3DData = (isActiveMatch && activePredictionModel.scatter3DData)
+                        ? activePredictionModel.scatter3DData
+                        : pairDataPoints.map(d => ({
+                            t: d.T,
+                            f: Math.round(d.f * 1000) / 10,
+                            s: d.S
+                        }));
+
+                    const simKey = `${s1} + ${s2} (3D Surface)`;
+
+                    const simTraces = [
+                        {
+                            type: 'surface',
+                            z: surfaceData.zData,
+                            x: surfaceData.fValues,
+                            y: surfaceData.tValues,
+                            colorscale: 'Viridis',
+                            opacity: 0.8,
+                            name: 'Predicted Model',
+                            showscale: false
+                        },
+                        {
+                            type: 'scatter3d',
+                            mode: 'markers',
+                            x: scatter3DData.map((d: any) => d.f),
+                            y: scatter3DData.map((d: any) => d.t),
+                            z: scatter3DData.map((d: any) => d.s),
+                            marker: { size: 5, color: '#0f172a', symbol: 'circle' },
+                            name: 'Experimental Data'
+                        }
+                    ];
+
+                    const simLayout = {
+                        autosize: true,
+                        showlegend: false,
+                        margin: { l: 0, r: 0, b: 0, t: 0 },
+                        scene: { 
+                            xaxis: { title: { text: `${s1} (%)`, font: { size: 16 } }, tickfont: { size: 13 } }, 
+                            yaxis: { title: { text: 'Temp (°C)', font: { size: 16 } }, tickfont: { size: 13 } }, 
+                            zaxis: { title: { text: 'Solubility (mg/mL)', font: { size: 16 } }, tickfont: { size: 13 } },
+                            aspectmode: 'cube'
+                        },
+                        paper_bgcolor: 'transparent',
+                        plot_bgcolor: 'transparent'
+                    };
+
+                    const candidateModels = models.map((m: any) => {
+                        let chartData = null;
+                        if (typeof m.predict === 'function' && surfaceData) {
+                            const tVals = surfaceData.tValues;
+                            const fVals = surfaceData.fValues;
+                            const zData = tVals.map((t: number) =>
                                 fVals.map((f: number) => {
                                     const pred = m.predict({ T: t, f: f / 100 });
                                     return Math.max(0, pred.pred);
@@ -294,17 +442,29 @@ export const exportToInteractiveHTML = async ({
                             );
                             chartData = { zData };
                         }
-                    }
-                    return {
-                        modelName: m.modelName,
-                        category: m.category || 'mathematical',
-                        stats: m.stats || { r2: 0, adj_r2: 0, rmse: 0, mape: 0, aic: 0 },
-                        chartData
+                        return {
+                            modelName: m.modelName,
+                            category: m.category || 'mathematical',
+                            stats: m.stats || { r2: 0, adj_r2: 0, rmse: 0, mape: 0, aic: 0 },
+                            chartData
+                        };
+                    });
+
+                    allSolventsData[simKey] = {
+                        key: simKey,
+                        displayName: `${s1} + ${s2} (3D Surface)`,
+                        is3D: true,
+                        selectedModel: {
+                            modelName: selectedModel.modelName,
+                            category: selectedModel.category || 'mathematical',
+                            stats: selectedModel.stats || { r2: 0, adj_r2: 0, rmse: 0, mape: 0, aic: 0 }
+                        },
+                        candidateModels,
+                        traces: simTraces,
+                        layout: simLayout
                     };
-                }),
-                traces: simTraces,
-                layout: simLayout
-            };
+                }
+            }
         }
     }
 
@@ -316,13 +476,17 @@ export const exportToInteractiveHTML = async ({
             const s1 = activePredictionModel.selectedSolvent1 || 'Solvent 1';
             const s2 = activePredictionModel.selectedSolvent2 || 'Solvent 2';
             const simKey = `${s1} + ${s2} (3D Surface)`;
+            const altSimKey = `${s2} + ${s1} (3D Surface)`;
             if (allSolventsData[simKey]) defaultSolventKey = simKey;
+            else if (allSolventsData[altSimKey]) defaultSolventKey = altSimKey;
         } else if (activePredictionModel.selectedSolvent1 && allSolventsData[activePredictionModel.selectedSolvent1]) {
             defaultSolventKey = activePredictionModel.selectedSolvent1;
         }
     }
     if (!defaultSolventKey && solventKeys.length > 0) {
-        defaultSolventKey = solventKeys[0];
+        // If a 3D surface exists, prefer defaulting to it when no specific model was actively selected
+        const surfaceKey = solventKeys.find(k => allSolventsData[k]?.is3D);
+        defaultSolventKey = surfaceKey || solventKeys[0];
     }
 
     const hasPredictions = solventKeys.length > 0;
@@ -351,7 +515,7 @@ export const exportToInteractiveHTML = async ({
                     <div><span class="font-bold text-slate-700">HPLC used:</span> ${hplcUsed || 'Not specified'}</div>
                 </div>
             </div>
-            ${logoBase64 ? `<div class="h-20 w-40 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center p-2 overflow-hidden"><img src="${logoBase64}" alt="Logo" class="max-h-full max-w-full object-contain scale-[1.3]"></div>` : ''}
+            ${logoBase64 ? `<div class="h-20 min-w-[200px] max-w-[260px] bg-white rounded-xl shadow-xs border border-slate-200/80 flex items-center justify-center p-2.5 shrink-0"><img src="${logoBase64}" alt="Logo" class="max-h-full max-w-full w-auto h-auto object-contain"></div>` : ''}
         </div>
 
         <div class="p-6 md:p-8 space-y-12">

@@ -140,7 +140,7 @@ ${sop.steps.map(s => `#### Step ${s.stepNumber}: ${s.title} (${s.stage})
               className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 flex items-center gap-1.5 transition-colors shadow-xs"
             >
               <Printer size={14} />
-              <span>Print / Save PDF</span>
+              <span>Print SOP</span>
             </button>
 
             <button

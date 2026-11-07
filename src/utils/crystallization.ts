@@ -247,6 +247,18 @@ export function calculateSeedingStrategy(
       prevDiffSeed = diffSeed;
     }
 
+    const cStarStart = getSolubility(tStart, fStart);
+    const startS = cStarStart > 0 ? c0 / cStarStart : 1.0;
+
+    // Initial solution is already saturated or supersaturated at tStart:
+    if (startS >= 1.0 && saturationT === null) {
+      saturationT = tStart;
+    }
+    if (startS >= targetS && seedingT === null) {
+      seedingT = tStart;
+      seedingProgressPct = 0;
+    }
+
     if (saturationT !== null && seedingT !== null) {
       seedingSubcoolingT = Math.max(0, Math.round((saturationT - seedingT) * 10) / 10);
       const totalDeltaT = tStart - tFinal;
@@ -290,6 +302,22 @@ export function calculateSeedingStrategy(
         seedingProgressPct = Math.round(progress * 100);
       }
       prevDiffSeed = diffSeed;
+    }
+
+    const cStarStart = getSolubility(tStart, fStart);
+    const startS = cStarStart > 0 ? c0 / cStarStart : 1.0;
+
+    // Initial solution is already saturated or supersaturated at starting condition:
+    if (startS >= 1.0 && saturationT === null && saturationSolvent1Fraction === null) {
+      saturationT = tStart;
+      saturationSolvent1Fraction = fStart;
+      saturationAntiSolventVol = 0;
+    }
+    if (startS >= targetS && seedingT === null && seedingSolvent1Fraction === null) {
+      seedingT = tStart;
+      seedingSolvent1Fraction = fStart;
+      seedingAntiSolventVol = 0;
+      seedingProgressPct = 0;
     }
 
     if (saturationT !== null && seedingT !== null) {
@@ -354,7 +382,15 @@ export function generatePhaseDiagram(
   seedingT: number | null,
   seedingAntiSolventVol: number | null,
   saturationT: number | null,
-  cFinal: number
+  cFinal: number,
+  targetS: number = 1.10,
+  pInitVolMl: number = 100,
+  totalAddedAntiSolvent: number = 0,
+  vPrimary: number = 100,
+  pApiMassG?: number,
+  saturationAntiSolventVol: number | null = null,
+  seedingSolvent1Fraction: number | null = null,
+  saturationSolvent1Fraction: number | null = null
 ): {
   phaseCurve: PhaseDiagramPoint[];
   trajectory: BatchTrajectoryPoint[];
@@ -369,6 +405,8 @@ export function generatePhaseDiagram(
   const isTempAxis = task === 'temperature' || task === 'simultaneous';
   const xLabel = isTempAxis ? 'Temperature' : 'Primary Solvent Fraction';
   const xUnit = isTempAxis ? '°C' : '%';
+
+  const apiMassMg = pApiMassG !== undefined ? pApiMassG * 1000 : batchC0 * pInitVolMl;
 
   // 1. Determine exact domain boundaries and collect all milestone / sampling X coordinates
   const xCoordSet = new Set<number>();
@@ -407,42 +445,63 @@ export function generatePhaseDiagram(
     }
     xCoordSet.add(Math.round(fStart * 10) / 10);
     xCoordSet.add(Math.round(fFinal * 10) / 10);
+    if (saturationSolvent1Fraction !== null && saturationSolvent1Fraction >= axisMin && saturationSolvent1Fraction <= axisMax) {
+      xCoordSet.add(Math.round(saturationSolvent1Fraction * 10) / 10);
+    }
+    if (seedingSolvent1Fraction !== null && seedingSolvent1Fraction >= axisMin && seedingSolvent1Fraction <= axisMax) {
+      xCoordSet.add(Math.round(seedingSolvent1Fraction * 10) / 10);
+    }
   }
 
   const sortedX = Array.from(xCoordSet).sort((a, b) => a - b);
 
   // 2. Generate Phase Curve Points & Batch Operating Trajectories
-  const seedX = isTempAxis ? seedingT : null;
-  const satX = isTempAxis ? saturationT : null;
+  const cStarStart = getSolubility(tStart, fStart);
+  const startS = cStarStart > 0 ? batchC0 / cStarStart : 1.0;
+
+  // If initial batch is already supersaturated at or above the seed target,
+  // seeding is charged immediately at the initial condition (progress = 0)
+  const isStartSupersaturated = startS >= targetS;
+  const effectiveSeedX = isStartSupersaturated
+    ? (isTempAxis ? tStart : fStart)
+    : (isTempAxis ? seedingT : seedingSolvent1Fraction);
+
+  const effectiveSeedS = isStartSupersaturated
+    ? Math.min(mszwScrit - 0.02, startS)
+    : Math.max(1.02, Math.min(mszwScrit - 0.05, targetS || 1.10));
+
   const minOperatingX = isTempAxis ? Math.min(tStart, tFinal) : Math.min(fStart, fFinal);
   const maxOperatingX = isTempAxis ? Math.max(tStart, tFinal) : Math.max(fStart, fFinal);
 
-  // Compute seed supersaturation S_seed
-  let seedS = 1.10;
-  if (isTempAxis && seedingT !== null) {
-    const cStarSeed = getSolubility(seedingT, fStart);
-    if (cStarSeed > 0) seedS = batchC0 / cStarSeed;
-  }
-
   sortedX.forEach(x => {
-    // Determine coupled T and f for solubility evaluation
+    // Determine coupled T, f, vAdd, and V_tot for solubility & concentration evaluation
     let T = x;
     let f = 100;
+    let vAdd = 0;
 
     if (isTempAxis) {
       T = x;
+      const totalDeltaT = Math.abs(tStart - tFinal);
+      const ratio = totalDeltaT > 0 ? Math.abs(tStart - T) / totalDeltaT : 0;
+      const clampedRatio = Math.max(0, Math.min(1, ratio));
+
       if (task === 'simultaneous') {
-        const ratio = Math.abs(tStart - tFinal) > 0 ? (tStart - T) / (tStart - tFinal) : 0;
-        const clampedRatio = Math.max(0, Math.min(1, ratio));
-        f = fStart + clampedRatio * (fFinal - fStart);
+        vAdd = clampedRatio * totalAddedAntiSolvent;
+        const vTot = pInitVolMl + vAdd;
+        f = vTot > 0 ? (vPrimary / vTot) * 100 : fStart;
       } else {
         f = fStart;
       }
     } else {
       T = tStart;
       f = x;
+      const totalDeltaF = Math.abs(fStart - fFinal);
+      const ratio = totalDeltaF > 0 ? Math.abs(fStart - f) / totalDeltaF : 0;
+      const clampedRatio = Math.max(0, Math.min(1, ratio));
+      vAdd = clampedRatio * totalAddedAntiSolvent;
     }
 
+    const currentVtot = pInitVolMl + vAdd;
     const cStar = getSolubility(T, f);
     const cCrit = cStar * mszwScrit;
     const metastableDelta = Math.max(0, cCrit - cStar);
@@ -457,59 +516,72 @@ export function generatePhaseDiagram(
     let stage: BatchTrajectoryPoint['stage'] | undefined = undefined;
 
     if (inBatchRange) {
-      // Is current point in the pre-seeding cooling stage?
-      // In cooling, tStart > tFinal, so pre-seeding is for T >= seedingT.
-      const isPreSeeding = isTempAxis
-        ? (seedX !== null ? (tStart >= tFinal ? x >= seedX - 0.001 : x <= seedX + 0.001) : x >= (tStart + tFinal) / 2)
-        : x >= (fStart + fFinal) / 2;
+      // Determine if current point is pre-seeding (homogeneous solution, cooling/dosing towards seed point)
+      let isPreSeeding = false;
+      if (effectiveSeedX !== null) {
+        if (isTempAxis) {
+          isPreSeeding = tStart >= tFinal ? x > effectiveSeedX + 0.001 : x < effectiveSeedX - 0.001;
+        } else {
+          isPreSeeding = fStart >= fFinal ? x > effectiveSeedX + 0.001 : x < effectiveSeedX - 0.001;
+        }
+      } else {
+        // If targetS was never reached, solution remains unseeded homogeneous liquid across the entire run
+        isPreSeeding = true;
+      }
 
       if (isPreSeeding) {
         // Pre-seeding: Homogeneous solution, NO crystal seeds present yet.
-        // Concentration in solution is STRICTLY CONSTANT at batchC0!
-        cBatch = batchC0;
-        cBatchLinear = batchC0;
-        S = cStar > 0 ? Number((batchC0 / cStar).toFixed(2)) : 1.0;
+        // Concentration in solution is determined by dissolved API mass / current diluted volume
+        const unseededC = currentVtot > 0 ? apiMassMg / currentVtot : batchC0;
+        cBatch = Number(unseededC.toFixed(2));
+        cBatchLinear = cBatch;
+        S = cStar > 0 ? Number((unseededC / cStar).toFixed(2)) : 1.0;
         SLinear = S;
-        if (satX !== null) {
-          stage = (tStart >= tFinal ? x > satX : x < satX) ? 'undersaturated' : 'metastable_cooling';
-        } else {
-          stage = cBatch <= cStar ? 'undersaturated' : 'metastable_cooling';
-        }
+        stage = S <= 1.005 ? 'undersaturated' : 'metastable_cooling';
       } else {
-        // Seeded growth stage: Seeds grow, consuming solute down towards equilibrium
-        const growthSpan = isTempAxis && seedX !== null ? Math.abs(tFinal - seedX) : Math.abs(fFinal - fStart) * 0.5;
-        const prog = isTempAxis && seedX !== null && growthSpan > 0
-          ? Math.abs(seedX - x) / growthSpan
-          : 0.5;
+        // Seeded growth stage: Seeds grow, consuming supersaturation down towards equilibrium
+        let growthSpan = 1;
+        let prog = 0.5;
+
+        if (isTempAxis) {
+          const refSeedX = effectiveSeedX !== null ? effectiveSeedX : tStart;
+          growthSpan = Math.abs(tFinal - refSeedX);
+          prog = growthSpan > 0 ? Math.abs(refSeedX - x) / growthSpan : 0;
+        } else {
+          const refSeedX = effectiveSeedX !== null ? effectiveSeedX : fStart;
+          growthSpan = Math.abs(fFinal - refSeedX);
+          prog = growthSpan > 0 ? Math.abs(refSeedX - x) / growthSpan : 0;
+        }
+
         const xi = Math.max(0, Math.min(1, prog)); // 0 (at seeding) to 1 (at isolation endpoint)
 
-        // Controlled Profile: Seeds consume supersaturation stably, staying inside safe MSZW corridor
+        // Controlled Profile: Seeds consume supersaturation stably, staying safely inside MSZW corridor
         let S_controlled: number;
         if (xi <= 0.85) {
-          S_controlled = seedS - 0.015 * Math.sin(xi * Math.PI);
+          S_controlled = effectiveSeedS - 0.015 * Math.sin(xi * Math.PI);
         } else {
           const u = (xi - 0.85) / 0.15;
-          S_controlled = 1.00 + (seedS - 1.00) * (1 - u * u);
+          S_controlled = 1.00 + (effectiveSeedS - 1.00) * (1 - u * u);
         }
 
         cBatch = Number((cStar * S_controlled).toFixed(2));
         S = Number(S_controlled.toFixed(2));
         stage = xi > 0.95 ? 'endpoint' : 'growth';
 
-        // Uncontrolled Linear Profile: Rapid constant cooling generates supersaturation faster than initial seed area
+        // Uncontrolled Linear Profile: Rapid constant cooling/dosing generates supersaturation faster than initial seed area
         // can consume, causing trajectory to excursion above C_crit into the Labile Zone!
         let S_lin: number;
-        const peakS = Math.min(1.42, mszwScrit + 0.06);
+        const peakS = Math.min(1.42, mszwScrit + 0.05);
         if (xi <= 0.35) {
           const u = xi / 0.35;
-          S_lin = seedS + (peakS - seedS) * Math.sin((u * Math.PI) / 2);
+          S_lin = effectiveSeedS + (peakS - effectiveSeedS) * Math.sin((u * Math.PI) / 2);
         } else if (xi <= 0.85) {
           const v = (xi - 0.35) / 0.50;
-          const endS = seedS - 0.02;
+          const endS = effectiveSeedS - 0.02;
           S_lin = endS + (peakS - endS) * Math.cos((v * Math.PI) / 2);
         } else {
           const w = (xi - 0.85) / 0.15;
-          const endS = seedS - 0.02;
+          const endS = effectiveSeedS - 0.02;
           S_lin = 1.00 + (endS - 1.00) * (1 - w * w);
         }
 
@@ -550,38 +622,53 @@ export function generatePhaseDiagram(
 
   // 3. Exact Milestone Markers
   // Marker 1: Initial State (dissolved charge at starting condition)
-  const cStarStart = getSolubility(tStart, fStart);
   markers.push({
     name: 'Initial State',
     x: isTempAxis ? tStart : fStart,
-    y: batchC0,
+    y: Number(batchC0.toFixed(1)),
     s: cStarStart > 0 ? Number((batchC0 / cStarStart).toFixed(2)) : 1.0,
     color: '#0284c7', // sky-600
-    description: `Clear homogeneous solution charged at ${isTempAxis ? `${tStart}°C` : `${fStart}%`}.`
+    description: `Clear solution charged at ${isTempAxis ? `${tStart}°C` : `${fStart}%`}.`
   });
 
   // Marker 2: Saturation Point (S = 1.00)
-  if (saturationT !== null) {
+  if (saturationT !== null || saturationSolvent1Fraction !== null || startS >= 1.0) {
+    const satX = isTempAxis ? (saturationT ?? tStart) : (saturationSolvent1Fraction ?? fStart);
+    let satVAdd = 0;
+    if (task === 'simultaneous') {
+      const satProg = Math.abs(tStart - tFinal) > 0 ? Math.abs(tStart - satX) / Math.abs(tStart - tFinal) : 0;
+      satVAdd = satProg * totalAddedAntiSolvent;
+    } else if (task === 'composition') {
+      satVAdd = saturationAntiSolventVol ?? 0;
+    }
+    const cSat = Number((apiMassMg / (pInitVolMl + satVAdd)).toFixed(1));
     markers.push({
-      name: 'Saturation (S = 1.0)',
-      x: isTempAxis ? saturationT : fStart,
-      y: batchC0,
-      s: 1.0,
+      name: startS >= 1.0 ? 'Saturation (S ≥ 1.0)' : 'Saturation (S = 1.0)',
+      x: satX,
+      y: cSat,
+      s: startS >= 1.0 ? Number(startS.toFixed(2)) : 1.0,
       color: '#f59e0b', // amber-500
-      description: `Crosses equilibrium solubility into the Metastable Zone.`
+      description: startS >= 1.0 ? 'Batch is already saturated at initial dissolution condition.' : 'Crosses equilibrium solubility into the Metastable Zone.'
     });
   }
 
-  // Marker 3: Seeding Point (S = S_seed)
-  if (seedingT !== null) {
-    const cSeedStar = getSolubility(seedingT, fStart);
+  // Marker 3: Seeding Point (S = S_target inside Metastable Zone)
+  if (effectiveSeedX !== null) {
+    let seedVAdd = 0;
+    if (task === 'simultaneous') {
+      const sProg = Math.abs(tStart - tFinal) > 0 ? Math.abs(tStart - effectiveSeedX) / Math.abs(tStart - tFinal) : 0;
+      seedVAdd = seedingAntiSolventVol !== null ? seedingAntiSolventVol : sProg * totalAddedAntiSolvent;
+    } else if (task === 'composition') {
+      seedVAdd = seedingAntiSolventVol !== null ? seedingAntiSolventVol : 0;
+    }
+    const cSeed = Number((apiMassMg / (pInitVolMl + seedVAdd)).toFixed(1));
     markers.push({
       name: 'Seeding Addition',
-      x: isTempAxis ? seedingT : fStart,
-      y: batchC0,
-      s: cSeedStar > 0 ? Number((batchC0 / cSeedStar).toFixed(2)) : 1.10,
+      x: effectiveSeedX,
+      y: cSeed,
+      s: Number(effectiveSeedS.toFixed(2)),
       color: '#10b981', // emerald-500
-      description: `Optimal seed introduction inside the Metastable Zone.`
+      description: isStartSupersaturated ? 'Batch is supersaturated; seeds charged at start of cooling.' : 'Optimal seed introduction inside the Metastable Zone.'
     });
   }
 
@@ -589,7 +676,7 @@ export function generatePhaseDiagram(
   markers.push({
     name: 'Isolation Endpoint',
     x: isTempAxis ? tFinal : fFinal,
-    y: cFinal,
+    y: Number(cFinal.toFixed(1)),
     s: 1.0,
     color: '#6366f1', // indigo-500
     description: `Target final cooling/dosing reached ready for filtration.`
@@ -1124,11 +1211,13 @@ export function calculateAdvancedCakeWash(
   const safeSolids = Math.max(0.01, recoveredSolidsG);
   const solidVolumeMl = safeSolids / crystalDensity;
   
-  const epsilon = Math.min(0.65, Math.max(0.15, washParams.cakePorosityPct / 100));
+  const porosityVal = Number(washParams?.cakePorosityPct);
+  const epsilon = Math.min(0.65, Math.max(0.15, (!isNaN(porosityVal) && porosityVal > 0 ? porosityVal : 35) / 100));
   const voidVolumeMl = solidVolumeMl * (epsilon / (1 - epsilon));
   const bedVolumeMl = solidVolumeMl + voidVolumeMl;
-  const numWashes = Math.max(1, washParams.numberOfWashes || 1);
-  const totalWashVolMl = Math.max(0, washParams.washVolMl * numWashes);
+  const numWashes = Math.max(1, Number(washParams?.numberOfWashes) || 1);
+  const singleWashVol = Number(washParams?.washVolMl);
+  const totalWashVolMl = Math.max(0, (!isNaN(singleWashVol) && singleWashVol >= 0 ? singleWashVol : 20) * numWashes);
   const washBedVolumes = bedVolumeMl > 0 ? totalWashVolMl / bedVolumeMl : 0;
 
   // Interstitial mother liquor trapped in cake before washing
@@ -1137,11 +1226,15 @@ export function calculateAdvancedCakeWash(
   const trappedDissolvedApiG = (trappedMotherLiquorMl * cFinal) / 1000;
 
   // Solubility in wash solvent at wash temperature
-  const cWashEquilibrium = getSolubility(washParams.washTempC, washParams.washSolvent1Pct);
+  const washTemp = Number(washParams?.washTempC);
+  const washFrac = Number(washParams?.washSolvent1Pct);
+  const safeWashTemp = !isNaN(washTemp) ? washTemp : 15;
+  const safeWashFrac = !isNaN(washFrac) ? washFrac : 0;
+  const cWashEquilibrium = getSolubility(safeWashTemp, safeWashFrac);
 
   // Dissolution loss calculation
   let washLossG = 0;
-  if (washParams.washMode === 'displacement') {
+  if (washParams?.washMode === 'displacement') {
     // Plug-flow displacement through cake pores: contact time is short, reaching ~30% kinetic saturation
     const alphaDisp = 0.30;
     washLossG = Math.min(safeSolids, (totalWashVolMl * cWashEquilibrium * alphaDisp) / 1000);
@@ -1151,7 +1244,8 @@ export function calculateAdvancedCakeWash(
   }
 
   // Displacement / impurity wash efficiency
-  const eta = Math.min(0.99, Math.max(0.50, washParams.displacementEfficiencyPct / 100));
+  const dispEffVal = Number(washParams?.displacementEfficiencyPct);
+  const eta = Math.min(0.99, Math.max(0.50, (!isNaN(dispEffVal) && dispEffVal > 0 ? dispEffVal : 85) / 100));
   const fractionRemaining = Math.pow(1 - eta, numWashes);
   const motherLiquorDisplacedPct = (1 - fractionRemaining) * 100;
   const residualMotherLiquorG = trappedMotherLiquorG * fractionRemaining;

@@ -102,12 +102,20 @@ export const PredictionTab: React.FC<PredictionTabProps> = ({ experimentId, samp
     return Array.from(s).sort();
   }, [samples]);
 
-  // Auto-select solvent 1 if none is selected
+  // Auto-select solvent 1 and solvent 2 if none are selected
   useEffect(() => {
     if (!selectedSolvent1 && availableSolvents.length > 0) {
-      setSelectedSolvent1(availableSolvents[0]);
+      const mixtureSample = samples.find(s => s.solvent1 && s.solvent2 && s.solvent1.trim() !== s.solvent2.trim());
+      if (mixtureSample) {
+        setSelectedSolvent1(mixtureSample.solvent1.trim());
+        if (!selectedSolvent2 && localStorage.getItem(`hplc-pred-solv2-${experimentId}`) === null) {
+          setSelectedSolvent2(mixtureSample.solvent2.trim());
+        }
+      } else {
+        setSelectedSolvent1(availableSolvents[0]);
+      }
     }
-  }, [availableSolvents, selectedSolvent1]);
+  }, [availableSolvents, selectedSolvent1, selectedSolvent2, samples, experimentId]);
 
   // Filter valid data points
   const rawValidData: DataPoint[] = useMemo(() => {
@@ -424,7 +432,7 @@ export const PredictionTab: React.FC<PredictionTabProps> = ({ experimentId, samp
   };
 
   const surfaceData = useMemo(() => {
-    if (!bestModel || predictionTask !== 'simultaneous' || !is3DView) return null;
+    if (!bestModel || predictionTask !== 'simultaneous') return null;
     
     let minT = Math.min(...rawValidData.map(d => d.T));
     let maxT = Math.max(...rawValidData.map(d => d.T));
@@ -454,25 +462,25 @@ export const PredictionTab: React.FC<PredictionTabProps> = ({ experimentId, samp
       fValues: fValues.map(f => f * 100),
       zData
     };
-  }, [bestModel, predictionTask, rawValidData, is3DView, tVal]);
+  }, [bestModel, predictionTask, rawValidData, tVal]);
 
   const scatter3DData = useMemo(() => {
-    if (predictionTask !== 'simultaneous' || !is3DView) return null;
+    if (predictionTask !== 'simultaneous') return null;
     return rawValidData.map(d => ({
       t: d.T,
       f: d.f * 100,
       s: d.S
     }));
-  }, [predictionTask, rawValidData, is3DView]);
+  }, [predictionTask, rawValidData]);
 
   const targetScatter3DPoint = useMemo(() => {
-    if (!predictionResult || isNaN(predictionResult.pred) || !is3DView || tVal === null || isNaN(tVal) || fVal === null || isNaN(fVal)) return null;
+    if (!predictionResult || isNaN(predictionResult.pred) || tVal === null || isNaN(tVal) || fVal === null || isNaN(fVal)) return null;
     return {
       t: tVal,
       f: fVal * 100,
       s: Math.max(0, predictionResult.pred)
     };
-  }, [predictionResult, is3DView, tVal, fVal]);
+  }, [predictionResult, tVal, fVal]);
 
   const plot3DData = useMemo(() => {
     if (!surfaceData || !scatter3DData) return [];
