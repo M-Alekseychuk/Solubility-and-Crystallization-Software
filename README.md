@@ -6,8 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6.svg)](tsconfig.json)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-38bdf8.svg)](src/index.css)
 
-An enterprise scientific computing engine and laboratory workflow application developed for the **Open Process Chemistry Project (OPCP)**. Designed for analytical HPLC solubility determinations, multi-model thermodynamic fitting, Hansen Solubility Parameter (HSP) green solvent substitutions, and batch cooling/anti-solvent crystallization process engineering.
-
+An HPLC UV absorbtion based solubility calculator with an integrated prediction engine (multi-model thermodynamic fitting), solvent picker (based on Hansen Solubility Parameter (HSP) and green solvent substitutions (GSK guide)), and a crystallization palnner.
 
 ---
 
@@ -36,25 +35,22 @@ An enterprise scientific computing engine and laboratory workflow application de
      - **2D Quadratic Polynomial & Spline** mathematical models
    - Automatic thermodynamic model ranking and selection prioritizing physically grounded thermodynamic models over unconstrained polynomials when statistical indicators ($R^2$, Adjusted $R^2$, RMSE, AIC) are close.
    - Interactive 2D slice curves and 3D WebGL response surface plots with real-time target prediction cursors.
-   - Full theme-aware high-contrast labeling supporting both light mode and dark mode.
 
 4. **Lab Solvents Inventory**:
-   - Built-in library of **55 curated laboratory standard solvents** matching official laboratory inventories.
+   - Built-in library of **55 curated laboratory standard solvents**.
    - Master reference database of **135+ solvents** with complete 3D Hansen Solubility Parameters ($\delta_D, \delta_P, \delta_H$).
    - Physical constants including boiling points, melting points, flash points, dielectric constants, viscosities, surface tensions, and water miscibility classifications.
    - Curated EHS hazard scores (1–10) and ICH Q3C Class 1, 2, and 3 classifications.
-   - One-click **"Save as Standard"** and **"Reset to Standard"** to preserve laboratory custom inventories across sessions.
    - Real-time search, custom solvent additions, and automatic 16-parameter reference database enrichment.
 
 5. **Green Chemistry & Solvent Replacement Engine**:
    - **3D Hansen Solubility Space**: Interactive Plotly 3D WebGL visualization showing target problem solvent coordinates, top drop-in candidates, and optimized binary blends.
-   - **Theme-Aware Dark Mode**: Crisp high-contrast white axis titles and tick fonts, dark coordinate frame (`#1e293b`), floating dark legend, and camera view presets (Default 3D, Top $\delta_D$ vs $\delta_P$, Front $\delta_P$ vs $\delta_H$, Side $\delta_D$ vs $\delta_H$).
    - **Single Drop-in Replacements**: Identifies greener alternatives to hazardous solvents (e.g., DCM, DMF, NMP) ranked by Hansen Euclidean distance ($R_a$), toxicological profile, boiling point, and cost:
      $$R_a = \sqrt{4(\Delta\delta_D)^2 + (\Delta\delta_P)^2 + (\Delta\delta_H)^2}$$
    - **Synergistic Binary Mixtures (Green Blends)**: Formulates two green solvents that combine to match the target solute's Hansen sphere closer than either pure component.
    - **EHS 3-Axis Hazard Radar**: Multi-pillar comparison (Occupational Health & Toxicology, Process Safety & Flammability, Environmental Fate & VOCs) aligned with Pfizer, GSK, and Sanofi green chemistry guides.
 
-6. **Crystallization Planner & Batch Recipe SOP Generator**:
+6. **Crystallization Planner**:
    - **Three Operating Modes**: Temperature Cooling, Anti-Solvent Addition, and Simultaneous Cooling + Anti-Solvent Addition.
    - **Phase Diagram & Metastable Zone**: Dynamic Metastable Zone Width (MSZW) boundaries ($C_{\text{crit}} = C^* \cdot S_{\text{crit}}$) with live supersaturation tracking ($S(t)$ and driving force $\Delta C(t)$).
    - **Controlled Batch Trajectories**: Mullin-Nývlt cubic cooling trajectory:
@@ -63,18 +59,15 @@ An enterprise scientific computing engine and laboratory workflow application de
    - **Seeding Kinetics & Physics**: Saturation point ($T_{\text{sat}}$), optimal seed point ($T_{\text{seed}}$), critical seed loading mass ($C_s^*$), median seed particle size ($D_{50}$), specific surface area ($SSA$), and volumetric seed surface area ($A_V$).
    - **Advanced Cake Washing & Filtration**: Plug-flow displacement washing vs. reslurry washing, interstitial mother liquor void volume holdup, cake porosity, wash liquor loss, wet cake to dry cake ratio, and filtration cycle times via Darcy-Ruth cake filtration theory.
    - **Green Process Metrics (ACS GCI)**: Comprehensive Process Mass Intensity (PMI) and Sheldon Environmental Factor ($E\text{-Factor}$) accounting for API, solvents, wash volumes, and product recovery.
-   - **Automated Batch SOP Generator**: Generates comprehensive Standard Operating Procedure (SOP) documents with printable execution checklists and downloadable CSV reactor schedules.
 
 ---
 
 ## 💾 Data Portability & Supported Exports
 
-- **Interactive Standalone HTML Report (`.html`)**: Self-contained offline report with embedded base64 OPCP logo, offline Tailwind/Plotly styling, interactive 2D curves, 3D response surface plot toggles, and searchable sample data tables.
+- **Interactive Standalone HTML Report (`.html`)**: Self-contained offline report with embedded base64 logo, offline Tailwind/Plotly styling, interactive 2D curves, 3D response surface plot toggles, and searchable sample data tables.
 - **Excel Comprehensive Workbook (`.xlsx`)**: Multi-tab formatted spreadsheet containing calibration curves, sample calculations, thermodynamic regression parameters, solvent inventory, green replacement rankings, and crystallization schedules with embedded Excel chart templates.
 - **Project State Backup (`.json`)**: Full laboratory project backup enabling seamless experiment transfer, archiving, and restoration.
-- **Batch Crystallization Schedule (`.csv`)**: Time-stepped reactor setpoint tables ready for direct import into process automation controllers, SCADA systems, and reactor recipes.
 - **Solvents Inventory Backup (`.xlsx`, `.json`)**: One-click laboratory solvent inventory export and import.
-- *(Note: Legacy PDF export was retired in favor of native Excel workbooks and self-contained interactive HTML reports).*
 
 ---
 
