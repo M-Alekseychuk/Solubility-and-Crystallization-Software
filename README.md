@@ -1,4 +1,4 @@
-# OPCP — HPLC Solubility Calculator & Crystallization Process Engine
+# HPLC Solubility Calculator & Crystallization Process Engine
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](package.json)
@@ -8,13 +8,6 @@
 
 An enterprise scientific computing engine and laboratory workflow application developed for the **Open Process Chemistry Project (OPCP)**. Designed for analytical HPLC solubility determinations, multi-model thermodynamic fitting, Hansen Solubility Parameter (HSP) green solvent substitutions, and batch cooling/anti-solvent crystallization process engineering.
 
-<p align="center">
-  <img src="public/Logo.png" alt="OPCP Logo" width="340" />
-</p>
-
-<p align="center">
-  <img src="public/assets/aistudio/grafik_baa147ba.png" alt="HPLC Solubility & Crystallization Phase Diagram" width="900" />
-</p>
 
 ---
 
@@ -151,18 +144,23 @@ An enterprise scientific computing engine and laboratory workflow application de
 - Node.js $\ge 18.0.0$
 - npm $\ge 9.0.0$
 
-### Installation & Development
+### Installation & Run
+
+Either install latest version release (.exe)
+
+or
+
 ```bash
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Start local development server (runs on port 3000)
+# 2. Start local development server (Port 3000)
 npm run dev
 
-# Run TypeScript static type-checking
+# 3. Type-check & lint
 npm run lint
 
-# Build optimized production bundle
+# 4. Production build
 npm run build
 ```
 
@@ -179,10 +177,13 @@ Detailed thermodynamic derivations, mathematical models, and API references are 
 - [Data Models & TypeScript Schemas](./docs/core/DATA_MODELS.md)
 - [API & Utility Derivations Reference](./docs/API_REFERENCE.md)
 
+
+## 🔒 Offline & Data Privacy
+
+This application runs **100% locally**. Nothing is ever sent to external servers or third-party cloud services. Local calculations and saved sessions reside solely on youe device.
+
 ---
 
 ## 📄 License
 
-This program is free software: you can redistribute it and/or modify it under the terms of the **GNU Affero General Public License** as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-See the [LICENSE](LICENSE) file for the full license text.
+GNU General Public License (GPL-3.0; https://www.gnu.org/licenses/gpl-3.0.html)
